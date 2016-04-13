@@ -34,6 +34,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
+/* TODO: 在CameraConfigurationUtils里面默认用FOCUS_MODE_CONTINUOUS_PICTURE聚焦，这样很慢。试试FOCUS_MODE_MACRO */
 public class MultiscanActivity extends Activity {
     private static final String TAG = MultiscanActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 2000L;
@@ -41,7 +42,6 @@ public class MultiscanActivity extends Activity {
     @Bind(R.id.the_surfaceview) SurfaceView mSurfaceView;
     @Bind(R.id.mask_image) ImageView mMaskImage;
 
-    private boolean hasSurface;
     private CameraManager mCameraManager;
     private CaptureHandler mCaptureHandler;
     private AmbientLightManager mAmbientLightManager;
@@ -56,27 +56,19 @@ public class MultiscanActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multiscan);
         ButterKnife.bind(this);
-        if (true) {
-            return;
-        }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        hasSurface = false;
         mAmbientLightManager = new AmbientLightManager(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (true) {
-            return;
-        }
-        Log.d(TAG, "onresume");
         mCaptureHandler = null;
         mCameraManager = new CameraManager(getApplication());
         mAmbientLightManager.start(mCameraManager);
 
-        if (hasSurface) {
+        if (mSurfaceView.getHolder().getSurface() != null) {
             initCamera(mSurfaceView.getHolder());
         } else {
             mSurfaceView.getHolder().addCallback(mSurfaceHolderCallback);
@@ -85,17 +77,13 @@ public class MultiscanActivity extends Activity {
 
     @Override
     protected void onPause() {
-        if (true) {
-            super.onPause();
-            return;
-        }
         if (mCaptureHandler != null) {
             mCaptureHandler.quitSynchronously();
             mCaptureHandler = null;
         }
         mAmbientLightManager.stop();
         mCameraManager.closeDriver();
-        if (!hasSurface)
+        if (mSurfaceView.getHolder().getSurface() == null)
             mSurfaceView.getHolder().removeCallback(mSurfaceHolderCallback);
         Log.d(TAG, "paused");
         super.onPause();
@@ -105,17 +93,6 @@ public class MultiscanActivity extends Activity {
     protected void onStop() {
         Log.d(TAG, "stopped");
         super.onStop();
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-                Log.d(TAG, "pressed back");
-                finish();
-                return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     public Handler getHandler() {
@@ -138,10 +115,7 @@ public class MultiscanActivity extends Activity {
             if (holder == null) {
                 Log.e(TAG, "*** WARNING *** surfaceCreated() gave us a null surface!");
             }
-            if (!hasSurface) {
-                hasSurface = true;
-                initCamera(holder);
-            }
+            initCamera(holder);
         }
 
         @Override
@@ -152,7 +126,6 @@ public class MultiscanActivity extends Activity {
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             Log.d(TAG, "surfaceDestroyed");
-            hasSurface = false;
         }
     };
 

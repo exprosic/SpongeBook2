@@ -42,4 +42,9 @@ public class MyApplication extends Application {
         client.addHeader("Authorization", "Token "+getInstance().getAuthorizeToken());
         return client;
     }
+
+    public static AsyncHttpClient getUnauthorizedClient() {
+        AsyncHttpClient client = new AsyncHttpClient();
+        return client;
+    }
 }

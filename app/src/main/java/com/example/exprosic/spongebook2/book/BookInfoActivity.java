@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -17,12 +16,12 @@ import com.example.exprosic.spongebook2.URLManager;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 import butterknife.Bind;
@@ -33,7 +32,6 @@ public class BookInfoActivity extends Activity {
     private static String TAG = BookInfoActivity.class.getSimpleName();
 
     /* views */
-    /* TODO Why can't be private? */
     @Bind(R.id.book_image) ImageView mBookImage;
     @Bind(R.id.book_infos) LinearLayout mBookInfos;
 
@@ -64,7 +62,7 @@ public class BookInfoActivity extends Activity {
 
     public void fetchBookInfo(final String bookId) {
         assert bookId != null;
-        MyApplication.getAuthorizedClient().get(this, URLManager.bookInfoFromId(bookId),
+        MyApplication.getUnauthorizedClient().get(this, URLManager.bookInfoFromId(bookId),
                 new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int status, Header[] headers, JSONObject jsonBook) {
@@ -116,7 +114,8 @@ public class BookInfoActivity extends Activity {
         /* set infos */
         for (Map.Entry<String,String> entry: infos.entrySet()) {
             TextView entryTextView = new TextView(this);
-            entryTextView.setText(entry.getKey()+": "+entry.getValue());
+            entryTextView.setText(String.format(Locale.CHINESE, "%s: %s", entry.getKey(), entry.getValue()));
+            mBookInfos.addView(entryTextView);
         }
 
         /* set image if any */

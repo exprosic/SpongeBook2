@@ -8,12 +8,15 @@ import android.widget.Toast;
 
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookInfoActivity;
+import com.example.exprosic.spongebook2.scan.MultiscanActivity;
 
 public class TestEntryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_test_entry);
-        BookInfoActivity.startWithBookId(this, "jd,10592815");
+        setContentView(R.layout.activity_test_entry);
+//        BookInfoActivity.startWithBookId(this, "jd,10592815");
+
+        MultiscanActivity.start(this);
     }
 }
