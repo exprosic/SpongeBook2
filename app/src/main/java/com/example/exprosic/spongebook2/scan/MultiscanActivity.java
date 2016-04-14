@@ -73,6 +73,7 @@ public class MultiscanActivity extends Activity {
         } else {
             mSurfaceView.getHolder().addCallback(mSurfaceHolderCallback);
         }
+        Log.d(TAG, "resumed");
     }
 
     @Override
@@ -164,6 +165,7 @@ public class MultiscanActivity extends Activity {
         params.width = rect.width();
         params.height = rect.height();
         mMaskImage.setLayoutParams(params);
+        Log.d(TAG, "inited");
     }
 
     private void restartPreviewAfterDelay(long delayMS) {
