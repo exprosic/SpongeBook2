@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">SpongeBook2</string>
+
+    <string name="my_books">我的图书</string>
+    <string name="my_friends">我的好友</string>
+    <string name="surrounding_users">周边用户</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

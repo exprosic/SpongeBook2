@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="@dimen/item_book_add_width"
+                android:height="@dimen/item_book_add_width" />
+            <corners android:radius="@dimen/item_book_add_stroke_width" />
+            <stroke android:width="@dimen/item_book_add_stroke_width"
+                android:color="@color/item_book_add"
+                android:dashGap="@dimen/item_book_add_dash_gap"
+                android:dashWidth="@dimen/item_book_add_dash_width" />
+        </shape>
+    </item>
+    <item>
+        <!-- horizontal line -->
+        <shape android:shape="rectangle">
+            <size android:width="@dimen/item_book_add_plus_length"
+                android:height="@dimen/item_book_add_plus_width" />
+            <solid android:color="@color/item_book_add" />
+        </shape>
+    </item>
+    <item>
+        <!-- vertical line -->
+        <shape android:shape="rectangle">
+            <size android:width="@dimen/item_book_add_plus_width"
+                android:height="@dimen/item_book_add_plus_length" />
+            <solid android:color="@color/item_book_add" />
+        </shape>
+    </item>
+</layer-list>

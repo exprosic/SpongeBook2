@@ -12,7 +12,7 @@ public enum ScanAction {
     DECODE_FAILED,
     RETURN_SCAN_RESULT;
 
-    private static ScanAction reverseMap[] = ScanAction.values();
+    private static final ScanAction reverseMap[] = ScanAction.values();
     public static ScanAction fromInt(int x) {
         return reverseMap[x];
     }
