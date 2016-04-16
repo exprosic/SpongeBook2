@@ -48,7 +48,7 @@ public class CameraConfigurationUtils {
             } else {
                 focusMode = findSettableValue("focus mode",
                         supportedFocusModes,
-//                        Camera.Parameters.SCENE_MODE_BARCODE,
+                        Camera.Parameters.SCENE_MODE_BARCODE,
                         Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE,
                         Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
                         Camera.Parameters.FOCUS_MODE_AUTO);

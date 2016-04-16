@@ -11,19 +11,21 @@
                 android:dashWidth="@dimen/item_book_add_dash_width" />
         </shape>
     </item>
-    <item>
+    <item android:top="@dimen/item_book_add_plus_offset_length"
+        android:bottom="@dimen/item_book_add_plus_offset_length"
+        android:left="@dimen/item_book_add_plus_offset_width"
+        android:right="@dimen/item_book_add_plus_offset_width">
         <!-- horizontal line -->
         <shape android:shape="rectangle">
-            <size android:width="@dimen/item_book_add_plus_length"
-                android:height="@dimen/item_book_add_plus_width" />
             <solid android:color="@color/item_book_add" />
         </shape>
     </item>
-    <item>
+    <item android:left="@dimen/item_book_add_plus_offset_length"
+        android:right="@dimen/item_book_add_plus_offset_length"
+        android:top="@dimen/item_book_add_plus_offset_width"
+        android:bottom="@dimen/item_book_add_plus_offset_width">
         <!-- vertical line -->
         <shape android:shape="rectangle">
-            <size android:width="@dimen/item_book_add_plus_width"
-                android:height="@dimen/item_book_add_plus_length" />
             <solid android:color="@color/item_book_add" />
         </shape>
     </item>

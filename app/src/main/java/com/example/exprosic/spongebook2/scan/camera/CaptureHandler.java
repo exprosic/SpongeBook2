@@ -72,7 +72,7 @@ public class CaptureHandler extends Handler{
                 activity.handleDecode((Result) message.obj, barcode, scaleFactor);
                 break;
             case DECODE_FAILED:
-                // We're decoding as fast as possible, so when one decode fails, start another.
+                // We're decoding as fast as possible, so when one decode fails, startAlone another.
                 state = State.PREVIEW;
                 cameraManager.requestPreviewFrame(decodeThread.getHandler(), ScanAction.DECODE);
                 break;

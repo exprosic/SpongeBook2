@@ -6,6 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.exprosic.spongebook2.MainActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/the_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize" />
     <android.support.design.widget.TabLayout
         android:id="@+id/the_tablayout"
         app:tabMode="fixed"

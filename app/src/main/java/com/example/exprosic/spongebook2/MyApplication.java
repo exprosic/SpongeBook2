@@ -1,12 +1,18 @@
 package com.example.exprosic.spongebook2;
 
 import android.app.Application;
-import android.content.Intent;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.example.exprosic.spongebook2.book.BookProvider;
+import com.example.exprosic.spongebook2.booklist.BookListProvider;
 import com.loopj.android.http.AsyncHttpClient;
+import com.squareup.picasso.Downloader;
+import com.squareup.picasso.OkHttpDownloader;
+import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
 
@@ -16,12 +22,29 @@ import java.util.Locale;
 public class MyApplication extends Application {
     private static final String TAG = MyApplication.class.getSimpleName();
 
+    private static final String PREF_TOKEN = "token";
+    private static final String PREF_USER_ID = "userId";
+
     private static MyApplication myApplication;
+    private BookListProvider mBookListProvider;
+    private BookProvider mBookProvider;
 
     @Override
     public void onCreate() {
         super.onCreate();
         myApplication = this;
+        mBookListProvider = new BookListProvider();
+        mBookProvider = new BookProvider();
+
+        setupPicasso(this);
+    }
+
+    private void setupPicasso(Context context) {
+        final int cacheSize = 10 * 1024 * 1024;
+        Downloader downloader = new OkHttpDownloader(context, cacheSize);
+        Picasso.Builder builder = new Picasso.Builder(context);
+        builder.downloader(downloader);
+        Picasso.setSingletonInstance(builder.build());
     }
 
     public static MyApplication getInstance() {
@@ -29,24 +52,41 @@ public class MyApplication extends Application {
         return myApplication;
     }
 
-    private static final String PREF_TOKEN = "token";
+    public static BookListProvider getBookListProvider() {
+        return myApplication.mBookListProvider;
+    }
 
-    private static SharedPreferences getAuthorizePreference() {
+    public static BookProvider getBookProvider() {
+        return myApplication.mBookProvider;
+    }
+
+    // preferences
+
+    public static SharedPreferences getGlobalPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(getInstance());
     }
-    private static String getAuthorizeToken() {
-        return getAuthorizePreference().getString(PREF_TOKEN, null);
+
+    public static void putGlobalPreferencesBoolean(String key, boolean val) {
+        SharedPreferences.Editor editor = getGlobalPreferences().edit();
+        editor.putBoolean(key, val);
+        editor.apply();
     }
 
-    private static void setAuthorizeToken(String token) {
-        getAuthorizePreference().edit().putString(PREF_TOKEN, token).commit();
+    // authorization
+    public static String getAuthorizeToken() {
+        return getGlobalPreferences().getString(PREF_TOKEN, null);
     }
 
+    public static void setAuthorizeToken(String token) {
+        getGlobalPreferences().edit().putString(PREF_TOKEN, token).commit();
+    }
+
+    @NonNull
     public static AsyncHttpClient getAuthorizedClient() {
         String token = getAuthorizeToken();
         if (token == null) {
-            Log.e(TAG, "not authorized yet");
-            return null;
+            Log.e(TAG, "not authorized yet", new Throwable());
+            throw new AssertionError();
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -58,27 +98,26 @@ public class MyApplication extends Application {
         return new AsyncHttpClient();
     }
 
-    /***********/
-    private int mMyUserId = -1;
+    // userId
 
     public static int getMyUserId() {
-        int result = getInstance().mMyUserId;
+        int result = getGlobalPreferences().getInt(PREF_USER_ID, -1);
         if (result < 0)
-            new Throwable("myUserId not known yet").printStackTrace();
+            Log.e(TAG, "myUserId not known yet", new Throwable());
         return result;
     }
 
     public static void setMyUserId(int myUserId) {
         if (myUserId < 0)
-            new Throwable(String.format(Locale.US, "setting illegal userId: %d", myUserId)).printStackTrace();
-        getInstance().mMyUserId = myUserId;
+            Log.d(TAG, String.format(Locale.US, "setting illegal userId: %d", myUserId), new Throwable());
+        getGlobalPreferences().edit().putInt(PREF_USER_ID, myUserId).commit();
     }
 
     public static boolean isMyself(int userId) {
         return getMyUserId() == userId;
     }
 
-    public static void invalidateMyUserId() {
-        getInstance().mMyUserId = -1;
+    public static void invalidateSession() {
+        getGlobalPreferences().edit().remove(PREF_TOKEN).remove(PREF_USER_ID).commit();
     }
 }

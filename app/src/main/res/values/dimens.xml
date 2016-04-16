@@ -3,13 +3,20 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="login_edit_text_width">100dp</dimen>
+
+    <dimen name="item_book_margin_horizontal">1dp</dimen>
     <dimen name="item_book_image_width">100dp</dimen>
     <dimen name="item_book_image_height">162dp</dimen>
 
     <dimen name="item_book_add_width">100dp</dimen>
-    <dimen name="item_book_add_stroke_width">10dp</dimen>
-    <dimen name="item_book_add_dash_width">30dp</dimen>
-    <dimen name="item_book_add_dash_gap">10dp</dimen>
+    <dimen name="item_book_add_stroke_width">3dp</dimen>
+    <dimen name="item_book_add_dash_width">10dp</dimen>
+    <dimen name="item_book_add_dash_gap">3dp</dimen>
     <dimen name="item_book_add_plus_width">10dp</dimen>
     <dimen name="item_book_add_plus_length">80dp</dimen>
+    <dimen name="item_book_add_plus_offset_width">20dp</dimen>
+    <dimen name="item_book_add_plus_offset_length">47dp</dimen>
+    <dimen name="item_book_add_corner">10dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

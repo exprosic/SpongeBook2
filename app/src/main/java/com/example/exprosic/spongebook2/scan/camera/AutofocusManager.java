@@ -9,6 +9,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -17,7 +18,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class AutoFocusManager implements Camera.AutoFocusCallback {
     private static final String TAG = AutoFocusManager.class.getSimpleName();
 
-    private static final long AUTO_FOCUS_INTERVAL_MS = 2000L;
+    private static final long AUTO_FOCUS_INTERVAL_MS = 500L;
     private static final Collection<String> FOCUS_MODES_CALLING_AF;
     static {
         FOCUS_MODES_CALLING_AF = new ArrayList<>(2);
@@ -44,6 +45,9 @@ public class AutoFocusManager implements Camera.AutoFocusCallback {
 
     @Override
     public synchronized void onAutoFocus(boolean success, Camera theCamera) {
+        float focalLength = theCamera.getParameters().getFocalLength();
+        Log.d(TAG, String.format(Locale.US, "focal length: %f", focalLength));
+
         focusing = false;
         autoFocusAgainLater();
     }
