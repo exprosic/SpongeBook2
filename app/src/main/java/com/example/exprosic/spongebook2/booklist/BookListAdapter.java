@@ -1,8 +1,8 @@
 package com.example.exprosic.spongebook2.booklist;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,15 +26,19 @@ public class BookListAdapter extends RecyclerView.Adapter {
     protected Context mContext;
     protected List<BookItem> mBookItems;
 
-    static class MyViewHolder extends RecyclerView.ViewHolder {
+    static class BookViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.the_text_view)
         TextView mTextView;
         @Bind(R.id.the_image_view)
         ImageView mImageView;
 
-        public MyViewHolder(View view) {
+        public BookViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
+        }
+
+        protected int getBookListPosition() {
+            return getAdapterPosition();
         }
     }
 
@@ -51,28 +55,45 @@ public class BookListAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType != 0)
             throw new AssertionError("viewType != 0 in BooksAdapter");
-        return new MyViewHolder(inflateBookItemView(parent));
+        return new BookViewHolder(inflateBookItemView(parent));
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        if (!(holder instanceof MyViewHolder))
-            throw new AssertionError("non-MyViewHolder passed to BooksAdapter");
-        MyViewHolder myViewHolder = (MyViewHolder)holder;
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (!(holder instanceof BookViewHolder))
+            throw new AssertionError("non-BookViewHolder passed to BooksAdapter");
+        BookViewHolder bookViewHolder = (BookViewHolder)holder;
 
-        String title = mBookItems.get(position).getTitle();
-        if (title.length() > 10)
+        String title = mBookItems.get(position).mTitle;
+        if (title.length() > 8)
             title = title.substring(0,7) + "...";
-        myViewHolder.mTextView.setText(title);
-        String imageUrl = mBookItems.get(position).getImageUrl();
-        if (imageUrl != null)
-            Picasso.with(mContext).load(imageUrl).tag(mContext).into(myViewHolder.mImageView);
-        myViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+        bookViewHolder.mTextView.setText(title);
+        bindImage(bookViewHolder);
+        bookViewHolder.itemView.setOnClickListener(onItemClick(bookViewHolder));
+    }
+
+    protected void bindImage(BookViewHolder holder) {
+        String imageUrl = mBookItems.get(holder.getBookListPosition()).mImageUrl;
+        if (imageUrl == null)
+            return;
+        if (imageUrl.equals(BookItem.NO_IMAGE)) {
+            holder.mImageView.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.no_image));
+        } else if (imageUrl.equals(BookItem.IMAGE_LOADING)) {
+            holder.mImageView.setImageDrawable(ContextCompat.getDrawable(mContext, R.drawable.image_loading));
+        } else {
+            Picasso.with(mContext).load(imageUrl).tag(mContext).into(holder.mImageView);
+        }
+    }
+
+    protected View.OnClickListener onItemClick(final BookViewHolder holder) {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BookInfoActivity.startWithBookId(mContext, mBookItems.get(holder.getAdapterPosition()).getBookId());
+                BookItem bookItem =  mBookItems.get(holder.getBookListPosition());
+                if (bookItem.isValid())
+                    BookInfoActivity.startWithBookId(mContext, bookItem.mBookId);
             }
-        });
+        };
     }
 
     @Override

@@ -11,6 +11,7 @@ import android.util.Log;
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.URLManager;
 import com.example.exprosic.spongebook2.utils.Database;
+import com.example.exprosic.spongebook2.utils.Sync;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -52,7 +53,7 @@ public class BookListProvider {
                 downloadBookList(context, userId, new OnBookListFetchedListener() {
                     @Override
                     public void onBookListFetched(List<String> bookIds) {
-                        mLastRefreshTimeStamp = System.currentTimeMillis();
+                        mLastRefreshTimeStamp = Sync.newTimeStamp();
                         MyApplication.putGlobalPreferencesBoolean(PREF_IS_SYNCHRONIZED, true);
                         if (MyApplication.isMyself(userId))
                             insertBookListIntoDb(userId, bookIds);
@@ -95,10 +96,22 @@ public class BookListProvider {
                             Log.e(TAG, "wrong update booklist response format", e);
                             throw new AssertionError();
                         }
+                        mLastRefreshTimeStamp = Sync.newTimeStamp();
                         insertBookListIntoDb(MyApplication.getMyUserId(), bookIds);
                         listener.onBookListUpdated(insertedCount, ignoredCount);
                     }
                 });
+    }
+
+    public void syncDb(List<String> bookIds) {
+        mLastRefreshTimeStamp = Sync.newTimeStamp();
+        insertBookListIntoDb(MyApplication.getMyUserId(), bookIds);
+    }
+
+    public void invalidateDb() {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.execSQL(BookListDbContract.SQL_CLEAR_TABLE);
+        MyApplication.getGlobalPreferences().edit().remove(PREF_IS_SYNCHRONIZED).commit();
     }
 
     private void fetchBookListFromDb(int userId, OnBookListFetchedListener listener) {
@@ -140,8 +153,12 @@ public class BookListProvider {
                         "UNIQUE(%3$s,%4$s));",
                 TABLE_NAME, _ID, COLUMN_NAME_USER_ID, COLUMN_NAME_BOOK_ID);
 
-        public static final String SQL_DELETE_ALL = String.format(Locale.US,
+        public static final String SQL_DROP_TABLE = String.format(Locale.US,
                 "DROP TABLE %s;",
+                TABLE_NAME);
+
+        public static final String SQL_CLEAR_TABLE = String.format(Locale.US,
+                "DELETE FROM %s",
                 TABLE_NAME);
 
         public static final String SQL_QUERY_BOOK_ID = String.format(Locale.US,
@@ -157,7 +174,7 @@ public class BookListProvider {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL(BookListDbContract.SQL_DELETE_ALL);
+            db.execSQL(BookListDbContract.SQL_DROP_TABLE);
             onCreate(db);
         }
     };

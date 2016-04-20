@@ -22,6 +22,17 @@ import butterknife.ButterKnife;
 public class MyBookListAdapter extends BookListAdapter {
     private static final int VIEWTYPE_ADD = 1;
 
+    static class MyOffsetViewHolder extends BookViewHolder {
+        public MyOffsetViewHolder(View view) {
+            super(view);
+        }
+
+        @Override
+        protected int getBookListPosition() {
+            return super.getBookListPosition()-1;
+        }
+    }
+
     static class BookAddViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.the_button)
         ImageView mImageView;
@@ -43,7 +54,7 @@ public class MyBookListAdapter extends BookListAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == 0)
-            return super.onCreateViewHolder(parent, viewType);
+            return new MyOffsetViewHolder(inflateBookItemView(parent));
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_book_add, parent, false);
         return new BookAddViewHolder(view);
     }

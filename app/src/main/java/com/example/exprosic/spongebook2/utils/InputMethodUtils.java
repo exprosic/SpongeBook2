@@ -8,8 +8,8 @@ import android.view.inputmethod.InputMethodManager;
 /**
  * Created by exprosic on 4/16/2016.
  */
-public class InputMethod {
-    public static final String TAG = InputMethod.class.getSimpleName();
+public class InputMethodUtils {
+    public static final String TAG = InputMethodUtils.class.getSimpleName();
 
     public static void show(View view) {
         InputMethodManager manager = (InputMethodManager)view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);

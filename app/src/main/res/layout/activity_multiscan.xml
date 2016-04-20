@@ -1,31 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.exprosic.spongebook2.scan.MultiscanActivity">
-    <SurfaceView
-        android:id="@+id/the_surfaceview"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/the_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <ImageView
-        android:id="@+id/mask_image"
-        android:background="#33000000"
-        android:layout_width="1px"
-        android:layout_height="1px" />
-    <Button
-        android:id="@+id/the_button"
-        android:text="@string/add_to_book_list"
-        android:layout_alignParentBottom="true"
+        android:layout_height="?attr/actionBarSize" />
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/the_recycler_view"
-        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-        android:orientation="horizontal"
-        android:layout_above="@id/the_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </android.support.v7.widget.RecyclerView>
-</RelativeLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <SurfaceView
+            android:id="@+id/the_surfaceview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ImageView
+            android:id="@+id/mask_image"
+            android:background="#33000000"
+            android:layout_width="1px"
+            android:layout_height="1px" />
+        <Button
+            android:id="@+id/the_button"
+            android:text="@string/add_to_book_list"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/the_recycler_view"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            android:orientation="horizontal"
+            android:layout_above="@id/the_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </android.support.v7.widget.RecyclerView>
+    </RelativeLayout>
+</LinearLayout>

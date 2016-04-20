@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private void logout() {
         Log.d(TAG, "logging out");
         MyApplication.getAuthorizedClient().post(this, URLManager.logout, null, new JsonHttpResponseHandler() {
-            // ignore response
+            // 忽略空响应
         });
         MyApplication.invalidateSession();
         LoginActivity.startAlone(this);

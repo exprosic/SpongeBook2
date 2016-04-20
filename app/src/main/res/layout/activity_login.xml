@@ -29,5 +29,24 @@
             android:text="@string/login"
             android:layout_columnSpan="2"
             android:layout_width="match_parent"/>
+        <LinearLayout android:layout_columnSpan="2"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/text_forget_password"
+                android:text="@string/forget_password"
+                android:gravity="left"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/text_register"
+                android:text="@string/register"
+                android:gravity="right"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </GridLayout>
 </RelativeLayout>

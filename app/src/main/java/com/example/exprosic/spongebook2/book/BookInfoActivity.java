@@ -1,42 +1,40 @@
 package com.example.exprosic.spongebook2.book;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
-import com.example.exprosic.spongebook2.URLManager;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import cz.msebera.android.httpclient.Header;
 
-public class BookInfoActivity extends Activity {
+public class BookInfoActivity extends AppCompatActivity {
     private static String TAG = BookInfoActivity.class.getSimpleName();
 
     /* views */
-    @Bind(R.id.book_image) ImageView mBookImage;
-    @Bind(R.id.book_infos) LinearLayout mBookInfos;
+    @Bind(R.id.the_toolbar)
+    Toolbar mToolBar;
+    @Bind(R.id.book_image)
+    ImageView mBookImage;
+    @Bind(R.id.book_infos)
+    LinearLayout mBookInfos;
 
     /* params */
-    private static String PARAM_BOOKID ="bookId";
+    private static String PARAM_BOOKID = "bookId";
     private String bookId;
 
     @Override
@@ -44,6 +42,9 @@ public class BookInfoActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_info);
         ButterKnife.bind(this);
+        setSupportActionBar(mToolBar);
+        //noinspection ConstantConditions
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         dumpInfoFromIntent(getIntent());
         fetchBookInfo(bookId);
@@ -62,68 +63,53 @@ public class BookInfoActivity extends Activity {
 
     public void fetchBookInfo(final String bookId) {
         assert bookId != null;
-        MyApplication.getUnauthorizedClient().get(this, URLManager.bookInfoFromId(bookId),
-                new JsonHttpResponseHandler() {
+        MyApplication.getBookProvider().fetchBookById(this, bookId, new BookProvider.OnBookFetchedListener() {
+            @Override
+            public void onBookFetched(final BookItem bookItem) {
+                runOnUiThread(new Runnable() {
                     @Override
-                    public void onSuccess(int status, Header[] headers, JSONObject jsonBook) {
-                        try {
-                            String title = jsonBook.getString("title");
-
-                            JSONObject jsonInfos = jsonBook.getJSONObject("infos");
-                            Map<String, String> infos = new HashMap<>(jsonInfos.length());
-                            for (Iterator<String> iterator=jsonInfos.keys(); iterator.hasNext();) {
-                                String key=iterator.next();
-                                infos.put(key, jsonInfos.getString(key));
-                            }
-
-                            String imageUrl = null;
-                            try {
-                                imageUrl = jsonBook.getString("imageurl");
-                            } catch (JSONException e) {
-                                /* no image, remain null */
-                            }
-
-                            renderBook(bookId, title, infos, imageUrl);
-                        } catch (JSONException e) {
-                            Log.e(TAG, "Bad Json Book Format: "+jsonBook.toString());
-                            e.printStackTrace();
-                        }
+                    public void run() {
+                        renderBook(bookItem);
                     }
-
-                    @Override
-                    public void onFailure(int status, Header[] headers, String response, Throwable throwable) {
-                        Toast.makeText(BookInfoActivity.this, "Request Failed", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                        Toast.makeText(BookInfoActivity.this, "Request Failed (JSONObject)", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
+                });
+            }
+        });
     }
 
-    private void renderBook(String bookId, String title, Map<String,String> infos, String imageUrl) {
+    private void renderBook(BookItem bookItem) {
         mBookInfos.removeAllViews();
 
         /* set title */
         TextView titleTextView = new TextView(this);
-        titleTextView.setText(title);
+        titleTextView.setText(bookItem.mTitle);
         mBookInfos.addView(titleTextView);
 
         /* set infos */
-        for (Map.Entry<String,String> entry: infos.entrySet()) {
+        for (Map.Entry<String, String> entry : bookItem.mInfos.entrySet()) {
             TextView entryTextView = new TextView(this);
             entryTextView.setText(String.format(Locale.CHINESE, "%s: %s", entry.getKey(), entry.getValue()));
             mBookInfos.addView(entryTextView);
         }
 
         /* set image if any */
-        if (imageUrl != null) {
+        if (bookItem.mImageUrl != null) {
             Picasso.with(this)
-                    .load(imageUrl)
+                    .load(bookItem.mImageUrl)
                     .placeholder(R.drawable.waiting_book_image)
                     .into(mBookImage);
+        } else {
+            mBookImage.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.no_image));
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

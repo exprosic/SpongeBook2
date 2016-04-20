@@ -11,7 +11,7 @@ import java.util.List;
  * Created by exprosic on 4/8/2016.
  */
 public class URLManager {
-    public static String HOST = "http://10.2.46.208:8000/";
+    public static String HOST = "http://10.0.65.19:8000/";
 //    public static String HOST = "http://123.57.56.221:8000/";
 
     public static String bookInfoFromId(String bookId) {

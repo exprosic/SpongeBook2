@@ -1,5 +1,9 @@
 package com.example.exprosic.spongebook2.utils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,12 +13,11 @@ public class ListUtils {
     public static <T> String concatenate(List<T> list) {
         return concatenate(list, " ");
     }
-
     public static <T> String concatenate(List<T> list, String delimiter) {
         StringBuilder builder = new StringBuilder();
         boolean isFirst = true;
         for (T item: list) {
-            if (isFirst)
+            if (!isFirst)
                 builder.append(delimiter);
             isFirst = false;
             builder.append(item.toString());

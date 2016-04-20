@@ -10,6 +10,8 @@
     <string name="login">登录</string>
     <string name="loggingin">登录中…</string>
     <string name="logout">退出登录</string>
+    <string name="forget_password">忘记密码</string>
+    <string name="register">注册</string>
     <string name="username">用户名</string>
     <string name="password">密码</string>
     <string name="password_confirm">确认密码</string>
@@ -19,7 +21,8 @@
 
     <string name="username_password_empty_msg">用户名和密码不能为空</string>
     <string name="username_password_wrong">用户名或密码错误</string>
-    <string name="format__login_fail_with_status">登录失败，状态码：%d</string>
+    <string name="format__login_fail_with_status" formatted="false">登录失败，状态码：%d</string>
 
-    <string name="format__book_list_inserted_ignored">更新成功，插入%d本，忽略%d本</string>
+    <string name="book_search_failed">未找到此书</string>
+    <string name="format__book_list_inserted_ignored" formatted="false">更新成功，插入%d本，忽略%d本</string>
 </resources>

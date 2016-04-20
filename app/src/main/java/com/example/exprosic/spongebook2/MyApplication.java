@@ -15,6 +15,10 @@ import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Created by exprosic on 4/8/2016.
@@ -28,6 +32,7 @@ public class MyApplication extends Application {
     private static MyApplication myApplication;
     private BookListProvider mBookListProvider;
     private BookProvider mBookProvider;
+    private ExecutorService mExecutor; //给AsyncHttpClient用的有限大小线程池，不然不限制线程数的话会堵
 
     @Override
     public void onCreate() {
@@ -35,6 +40,7 @@ public class MyApplication extends Application {
         myApplication = this;
         mBookListProvider = new BookListProvider();
         mBookProvider = new BookProvider();
+        mExecutor = Executors.newFixedThreadPool(4);
 
         setupPicasso(this);
     }
@@ -90,12 +96,15 @@ public class MyApplication extends Application {
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
+        client.setThreadPool(getInstance().mExecutor);
         client.addHeader("Authorization", "Token "+token);
         return client;
     }
 
     public static AsyncHttpClient getUnauthorizedClient() {
-        return new AsyncHttpClient();
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.setThreadPool(getInstance().mExecutor);
+        return client;
     }
 
     // userId
@@ -119,5 +128,7 @@ public class MyApplication extends Application {
 
     public static void invalidateSession() {
         getGlobalPreferences().edit().remove(PREF_TOKEN).remove(PREF_USER_ID).commit();
+        getBookListProvider().invalidateDb();
+        getBookProvider().invalidateDb();
     }
 }

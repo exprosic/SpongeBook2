@@ -10,13 +10,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.exprosic.spongebook2.utils.InputMethod;
-import com.loopj.android.http.JsonHttpResponseHandler;
+import com.example.exprosic.spongebook2.utils.InputMethodUtils;
+import com.example.exprosic.spongebook2.utils.JSON;
+import com.example.exprosic.spongebook2.utils.net.StringFailureJsonResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.Bind;
@@ -65,7 +67,7 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setClickable(false);
         String username = mUsernameEdit.getText().toString();
         String password = mPasswordEdit.getText().toString();
-        MyApplication.getUnauthorizedClient().post(this, URLManager.login.URL, URLManager.login.params(username, password), new JsonHttpResponseHandler() {
+        MyApplication.getUnauthorizedClient().post(this, URLManager.login.URL, URLManager.login.params(username, password), new StringFailureJsonResponseHandler() {
            @Override
            public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
                try {
@@ -73,6 +75,10 @@ public class LoginActivity extends AppCompatActivity {
                    int userId = jsonObject.getInt("userId");
                    MyApplication.setAuthorizeToken(token);
                    MyApplication.setMyUserId(userId);
+
+                   List<String> bookIds = JSON.toStringList(jsonObject.getJSONArray("bookIds"));
+                   MyApplication.getBookListProvider().syncDb(bookIds);
+
                    MainActivity.start(LoginActivity.this);
                    finish();
                } catch (JSONException e) {
@@ -96,16 +102,16 @@ public class LoginActivity extends AppCompatActivity {
     private void showInputMethod() {
         if (!mUsernameEdit.requestFocus())
             return;
-        InputMethod.show(mUsernameEdit);
+        InputMethodUtils.show(mUsernameEdit);
     }
 
     private View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             if (!hasFocus) {
-                InputMethod.hide(v);
+                InputMethodUtils.hide(v);
             } else {
-                InputMethod.show(v);
+                InputMethodUtils.show(v);
             }
         }
     };
