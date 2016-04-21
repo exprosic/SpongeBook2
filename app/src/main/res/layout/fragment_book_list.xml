@@ -1,20 +1,17 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.example.exprosic.spongebook2.booklist.BookListFragment">
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/the_swipe_refresh_layout"
+    tools:context="com.example.exprosic.spongebook2.booklist.BookListFragment"
+    android:id="@+id/the_swipe_refresh_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/the_recycler_view"
+        app:layoutManager="android.support.v7.widget.GridLayoutManager"
+        app:spanCount="@integer/fragment_book_list_columns"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/the_recycler_view"
-            app:layoutManager="android.support.v7.widget.GridLayoutManager"
-            app:spanCount="3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <!-- spanCount=3 for test -->
-        </android.support.v7.widget.RecyclerView>
-    </android.support.v4.widget.SwipeRefreshLayout>
-</FrameLayout>
+        <!-- spanCount=3 for test -->
+    </android.support.v7.widget.RecyclerView>
+</android.support.v4.widget.SwipeRefreshLayout>

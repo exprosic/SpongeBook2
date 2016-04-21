@@ -3,7 +3,6 @@ package com.example.exprosic.spongebook2.book;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -63,7 +62,7 @@ public class BookInfoActivity extends AppCompatActivity {
 
     public void fetchBookInfo(final String bookId) {
         assert bookId != null;
-        MyApplication.getBookProvider().fetchBookById(this, bookId, new BookProvider.OnBookFetchedListener() {
+        MyApplication.getBookProvider().fetchBookById(this, bookId, new BookProvider.OnFetchedListener() {
             @Override
             public void onBookFetched(final BookItem bookItem) {
                 runOnUiThread(new Runnable() {

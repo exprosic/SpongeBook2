@@ -11,7 +11,7 @@ import java.util.List;
  * Created by exprosic on 4/8/2016.
  */
 public class URLManager {
-    public static String HOST = "http://10.0.65.19:8000/";
+    public static String HOST = "http://10.2.47.77:8000/";
 //    public static String HOST = "http://123.57.56.221:8000/";
 
     public static String bookInfoFromId(String bookId) {
@@ -31,15 +31,42 @@ public class URLManager {
             }
         }
     }
-
     public static class login {
         public static String URL = toHostUrl("login/");
         public static RequestParams params(String username, String password) {
             return new RequestParamBuilder().append("username", username).append("password", password).done();
         }
     }
-
     public static String logout = toHostUrl("logout/");
+    public static String friendList = toHostUrl("friends/");
+    public static class requestFriend {
+        public static String URL(int userId) {
+            return toHostUrl("friend/request/%d/", userId);
+        }
+        public static RequestParams params() {
+            return new RequestParams();
+        }
+    }
+    public static class acceptFriend {
+        public static String URL(int userId) {
+            return toHostUrl("friend/accept/%d/", userId);
+        }
+        public static RequestParams params() {
+            return new RequestParams();
+        }
+    }
+    public static class friendRequests {
+        public static String URL = toHostUrl("friend/requests/");
+        public static RequestParams params() {
+            return new RequestParams();
+        }
+    }
+    public static String searchFriends(String pattern) {
+        return toHostUrl("users/?pattern=%s", pattern);
+    }
+
+
+    /*********************************************************/
 
     private static String toHostUrl(String pattern, Object... args) {
         try {

@@ -13,7 +13,6 @@ import cz.msebera.android.httpclient.Header;
 public class StringFailureJsonResponseHandler extends JsonHttpResponseHandler {
     @Override
     public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-
         onFailure(statusCode, headers, errorResponse==null?null:errorResponse.toString(), throwable);
     }
 

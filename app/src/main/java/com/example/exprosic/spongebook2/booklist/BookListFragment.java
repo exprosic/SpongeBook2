@@ -87,7 +87,7 @@ public class BookListFragment extends Fragment {
     }
 
     private void loadBookList() {
-        MyApplication.getBookListProvider().fetchBookList(getContext(), mUserId, new BookListProvider.OnBookListFetchedListener() {
+        MyApplication.getBookListProvider().fetchBookList(getActivity(), mUserId, new BookListProvider.OnFetchedListener() {
             @Override
             public void onBookListFetched(final List<String> bookIds) {
                 {
@@ -97,7 +97,7 @@ public class BookListFragment extends Fragment {
                         builder.append(bookId);
                         builder.append("; ");
                     }
-                    Debugging.makeRawToast(getContext(), Toast.LENGTH_SHORT, builder.toString());
+                    Debugging.makeRawToast(getActivity(), Toast.LENGTH_SHORT, builder.toString());
                 }
                 mLastRefreshTimeStamp = MyApplication.getBookListProvider().getTimeStamp();
                 if (mBookItems != null) {
@@ -108,7 +108,7 @@ public class BookListFragment extends Fragment {
                 final CountDownLatch latch = new CountDownLatch(bookIds.size());
                 for (int i = 0; i < bookIds.size(); ++i) {
                     final int idx = i;
-                    MyApplication.getBookProvider().fetchBookById(getContext(), bookIds.get(i), new BookProvider.OnBookFetchedListener() {
+                    MyApplication.getBookProvider().fetchBookById(getActivity(), bookIds.get(i), new BookProvider.OnFetchedListener() {
                         @Override
                         public void onBookFetched(final BookItem bookItem) {
                             try {
@@ -153,9 +153,9 @@ public class BookListFragment extends Fragment {
             mRecyclerView.getAdapter().notifyDataSetChanged();
         } else {
             if (MyApplication.isMyself(mUserId)) {
-                mRecyclerView.setAdapter(new MyBookListAdapter(getContext(), mBookItems));
+                mRecyclerView.setAdapter(new MyBookListAdapter(getActivity(), mBookItems));
             } else {
-                mRecyclerView.setAdapter(new BookListAdapter(getContext(), mBookItems));
+                mRecyclerView.setAdapter(new BookListAdapter(getActivity(), mBookItems));
             }
         }
     }

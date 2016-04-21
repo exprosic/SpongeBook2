@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.example.exprosic.spongebook2.book.BookProvider;
 import com.example.exprosic.spongebook2.booklist.BookListProvider;
+import com.example.exprosic.spongebook2.friend.FriendListProvider;
+import com.example.exprosic.spongebook2.friend.FriendSearcher;
 import com.loopj.android.http.AsyncHttpClient;
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.OkHttpDownloader;
@@ -29,9 +31,13 @@ public class MyApplication extends Application {
     private static final String PREF_TOKEN = "token";
     private static final String PREF_USER_ID = "userId";
 
+    private static final int POOL_SIZE = 5;
+
     private static MyApplication myApplication;
     private BookListProvider mBookListProvider;
     private BookProvider mBookProvider;
+    private FriendListProvider mFriendListProvider;
+    private FriendSearcher mFriendSearcher;
     private ExecutorService mExecutor; //给AsyncHttpClient用的有限大小线程池，不然不限制线程数的话会堵
 
     @Override
@@ -40,7 +46,9 @@ public class MyApplication extends Application {
         myApplication = this;
         mBookListProvider = new BookListProvider();
         mBookProvider = new BookProvider();
-        mExecutor = Executors.newFixedThreadPool(4);
+        mFriendListProvider = new FriendListProvider();
+        mFriendSearcher = new FriendSearcher();
+        mExecutor = Executors.newFixedThreadPool(POOL_SIZE);
 
         setupPicasso(this);
     }
@@ -64,6 +72,14 @@ public class MyApplication extends Application {
 
     public static BookProvider getBookProvider() {
         return myApplication.mBookProvider;
+    }
+
+    public static FriendListProvider getFriendListProvider() {
+        return myApplication.mFriendListProvider;
+    }
+
+    public static FriendSearcher getFriendSearcher() {
+        return myApplication.mFriendSearcher;
     }
 
     // preferences
@@ -129,6 +145,7 @@ public class MyApplication extends Application {
     public static void invalidateSession() {
         getGlobalPreferences().edit().remove(PREF_TOKEN).remove(PREF_USER_ID).commit();
         getBookListProvider().invalidateDb();
-        getBookProvider().invalidateDb();
+//        getBookProvider().invalidateDb(); // 没必要抹掉所有本地书籍缓存
+        getFriendListProvider().invalidateDb();
     }
 }

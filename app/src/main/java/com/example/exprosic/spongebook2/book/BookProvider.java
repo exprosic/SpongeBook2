@@ -9,7 +9,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Looper;
 import android.provider.BaseColumns;
 import android.util.Log;
-import android.widget.LinearLayout;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.URLManager;
@@ -38,17 +37,17 @@ public class BookProvider {
     private static final String DB_NAME = "bookinfo.db";
     private static final int DB_VERSION = 1;
 
-    public interface OnBookFetchedListener {
+    public interface OnFetchedListener {
         void onBookFetched(BookItem bookItem);
     }
 
     private Sync.LoopRunnableThread mDbThread = Sync.newLoopRunnableThreadHandler();
 
-    public void fetchBookById(final Context context, final String bookId, final OnBookFetchedListener listener) {
+    public void fetchBookById(final Context context, final String bookId, final OnFetchedListener listener) {
         mDbThread.addTask(new Runnable() {
             @Override
             public void run() {
-                fetchBookByIdFromDb(bookId, new OnBookFetchedListener() {
+                fetchBookByIdFromDb(bookId, new OnFetchedListener() {
                     @Override
                     public void onBookFetched(BookItem bookItem) {
                         if (bookItem != null) {
@@ -63,7 +62,7 @@ public class BookProvider {
         });
     }
 
-    public void fetchBookByIsbn(Context context, String isbn, OnBookFetchedListener listener) {
+    public void fetchBookByIsbn(Context context, String isbn, OnFetchedListener listener) {
         MyApplication.getUnauthorizedClient().get(context, URLManager.bookInfoFromIsbn(isbn),
                 responseHandlerWithListener(listener));
     }
@@ -71,10 +70,10 @@ public class BookProvider {
     public void invalidateDb() {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.execSQL(BookInfosContract.SQL_CLEAR_TABLE);
-        db.execSQL(BookUniInfoContract.SQL_CLEAER_TABLE);
+        db.execSQL(BookUniInfoContract.SQL_CLEAR_TABLE);
     }
 
-    private void fetchBookByIdFromDb(String bookId, OnBookFetchedListener listener) {
+    private void fetchBookByIdFromDb(String bookId, OnFetchedListener listener) {
         //调用者负责处理线程问题
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor cursor = Database.rawQuery(db, BookUniInfoContract.SQL_QUERY_BY_BOOK_ID, bookId);
@@ -136,7 +135,7 @@ public class BookProvider {
         }
     }
 
-    private JsonHttpResponseHandler responseHandlerWithListener(final OnBookFetchedListener listener) {
+    private JsonHttpResponseHandler responseHandlerWithListener(final OnFetchedListener listener) {
         return new StringFailureJsonResponseHandler() {
             @Override
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
@@ -181,8 +180,8 @@ public class BookProvider {
                 "DROP TABLE %s",
                 TABLE_NAME);
 
-        public static final String SQL_CLEAER_TABLE = String.format(Locale.US,
-                "DELTE FROM %s",
+        public static final String SQL_CLEAR_TABLE = String.format(Locale.US,
+                "DELETE FROM %s",
                 TABLE_NAME);
 
         public static final String SQL_QUERY_BY_BOOK_ID = String.format(Locale.US,
@@ -210,7 +209,7 @@ public class BookProvider {
                 TABLE_NAME);
 
         public static final String SQL_CLEAR_TABLE = String.format(Locale.US,
-                "CLEAR TABLE %s",
+                "DELETE FROM %s",
                 TABLE_NAME);
 
         public static final String SQL_QUERY_BY_UNI_INFO_ID = String.format(Locale.US,

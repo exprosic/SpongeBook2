@@ -27,11 +27,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".book.BookInfoActivity"/>
+        <activity android:name=".book.BookInfoActivity" />
         <activity android:name=".scan.MultiscanActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".LoginActivity"
+        <activity
+            android:name=".LoginActivity"
             android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".booklist.BookListActivity" />
+        <activity android:name=".friend.AddFriendActivity"></activity>
     </application>
 
 </manifest>

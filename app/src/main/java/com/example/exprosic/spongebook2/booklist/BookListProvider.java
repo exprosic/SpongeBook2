@@ -30,10 +30,12 @@ import cz.msebera.android.httpclient.Header;
 public class BookListProvider {
     private static final String TAG = BookListProvider.class.getSimpleName();
     private static final String PREF_IS_SYNCHRONIZED = "isBookListSynchronized";
+    private static final String DB_NAME = "booklist.db";
+    private static final int DB_VERSION = 3;
 
     private long mLastRefreshTimeStamp;
 
-    public interface OnBookListFetchedListener {
+    public interface OnFetchedListener {
         void onBookListFetched(List<String> bookIds);
     }
 
@@ -45,12 +47,12 @@ public class BookListProvider {
         return mLastRefreshTimeStamp;
     }
 
-    public void fetchBookList(Context context, final int userId, final OnBookListFetchedListener listener) {
+    public void fetchBookList(Context context, final int userId, final OnFetchedListener listener) {
         if (MyApplication.isMyself(userId)) {
             if (MyApplication.getGlobalPreferences().getBoolean(PREF_IS_SYNCHRONIZED, false)) {
                 fetchBookListFromDb(userId, listener);
             } else {
-                downloadBookList(context, userId, new OnBookListFetchedListener() {
+                downloadBookList(context, userId, new OnFetchedListener() {
                     @Override
                     public void onBookListFetched(List<String> bookIds) {
                         mLastRefreshTimeStamp = Sync.newTimeStamp();
@@ -66,7 +68,7 @@ public class BookListProvider {
         }
     }
 
-    private void downloadBookList(Context context, int userId, final OnBookListFetchedListener listener) {
+    private void downloadBookList(Context context, int userId, final OnFetchedListener listener) {
         MyApplication.getUnauthorizedClient().get(context, URLManager.BookList.get(userId), new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int status, Header[] headers, JSONArray jsonArray) {
@@ -110,16 +112,16 @@ public class BookListProvider {
 
     public void invalidateDb() {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.execSQL(BookListDbContract.SQL_CLEAR_TABLE);
+        db.execSQL(DbContract.SQL_CLEAR_TABLE);
         MyApplication.getGlobalPreferences().edit().remove(PREF_IS_SYNCHRONIZED).commit();
     }
 
-    private void fetchBookListFromDb(int userId, OnBookListFetchedListener listener) {
+    private void fetchBookListFromDb(int userId, OnFetchedListener listener) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        Cursor cursor = Database.rawQuery(db, BookListDbContract.SQL_QUERY_BOOK_ID, userId);
+        Cursor cursor = Database.rawQuery(db, DbContract.SQL_QUERY_BOOK_ID, userId);
         List<String> bookIds = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
-            bookIds.add(cursor.getString(cursor.getColumnIndex(BookListDbContract.COLUMN_NAME_BOOK_ID)));
+            bookIds.add(cursor.getString(cursor.getColumnIndex(DbContract.COLUMN_NAME_BOOK_ID)));
         }
         cursor.close();
         listener.onBookListFetched(bookIds);
@@ -130,23 +132,20 @@ public class BookListProvider {
         db.beginTransaction();
         for (String bookId : bookIds) {
             ContentValues values = new ContentValues();
-            values.put(BookListDbContract.COLUMN_NAME_USER_ID, userId);
-            values.put(BookListDbContract.COLUMN_NAME_BOOK_ID, bookId);
-            db.insertWithOnConflict(BookListDbContract.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            values.put(DbContract.COLUMN_NAME_USER_ID, userId);
+            values.put(DbContract.COLUMN_NAME_BOOK_ID, bookId);
+            db.insertWithOnConflict(DbContract.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         }
         db.setTransactionSuccessful();
         db.endTransaction();
     }
 
-    private static final String DB_NAME = "booklist.db";
-    private static final int DB_VERSION = 3;
-
-    private static abstract class BookListDbContract implements BaseColumns {
+    private static abstract class DbContract implements BaseColumns {
         public static final String TABLE_NAME = "entry";
         public static final String COLUMN_NAME_USER_ID = "UserId";
         public static final String COLUMN_NAME_BOOK_ID = "BookId";
 
-        public static final String SQL_CREATE = String.format(Locale.US,
+        public static final String SQL_CREATE_TABLE = String.format(Locale.US,
                 "CREATE TABLE %1$s (%2$s INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "%3$s INTEGER, " +
                         "%4$s TEXT, " +
@@ -169,12 +168,12 @@ public class BookListProvider {
     private SQLiteOpenHelper mDbHelper = new SQLiteOpenHelper(MyApplication.getInstance(), DB_NAME, null, DB_VERSION) {
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(BookListDbContract.SQL_CREATE);
+            db.execSQL(DbContract.SQL_CREATE_TABLE);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL(BookListDbContract.SQL_DROP_TABLE);
+            db.execSQL(DbContract.SQL_DROP_TABLE);
             onCreate(db);
         }
     };

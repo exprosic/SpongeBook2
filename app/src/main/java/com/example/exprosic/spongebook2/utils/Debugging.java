@@ -16,7 +16,7 @@ public class Debugging {
         Toast.makeText(context, msg, duration).show();
     }
 
-    public static void makeToast(Context context, int duration, String format, Object[] args) {
+    public static void makeToast(Context context, int duration, String format, Object... args) {
         Toast.makeText(context, String.format(Locale.CHINESE, format, args), duration).show();
     }
 

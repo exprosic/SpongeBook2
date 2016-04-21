@@ -49,4 +49,15 @@ public class Sync {
         thread.start();
         return thread;
     }
+
+    public static void awaitIgnoreInterrupt(CountDownLatch latch) {
+        while (latch.getCount() > 0) {
+            try {
+                latch.await();
+                break;
+            } catch (InterruptedException e) {
+                /* continue */
+            }
+        }
+    }
 }

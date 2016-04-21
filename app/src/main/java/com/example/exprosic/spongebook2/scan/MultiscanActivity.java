@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -94,7 +93,7 @@ public class MultiscanActivity extends AppCompatActivity {
             }
         });
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         hasSurface = false;
         mAmbientLightManager = new AmbientLightManager(this);
     }
@@ -229,7 +228,7 @@ public class MultiscanActivity extends AppCompatActivity {
         mBookItems.add(placeHolder);
         mRecyclerView.getAdapter().notifyItemInserted(idx);
         mRecyclerView.getLayoutManager().scrollToPosition(mRecyclerView.getAdapter().getItemCount()-1);
-        MyApplication.getBookProvider().fetchBookByIsbn(this, isbn, new BookProvider.OnBookFetchedListener() {
+        MyApplication.getBookProvider().fetchBookByIsbn(this, isbn, new BookProvider.OnFetchedListener() {
             @Override
             public void onBookFetched(BookItem bookItem) {
                 if (bookItem == null) {

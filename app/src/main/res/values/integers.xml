@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <integer name="fragment_book_list_columns">3</integer>
     <integer name="item_friend_columns_per_table">2</integer>
+    <integer name="item_search_friend_columns_per_table">3</integer>
 </resources>

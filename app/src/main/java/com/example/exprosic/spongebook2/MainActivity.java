@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             public Fragment getItem(int position) {
                 switch (MyTabEnum.fromInt(position)) {
                     case MY_BOOKS:
-                        return BookListFragment.newInstanceByUserId(1); // 0 for testing
+                        return BookListFragment.newInstanceByUserId(MyApplication.getMyUserId());
                     case MY_FRIENDS:
                         return FriendsFragment.newInstance();
                     case SURROUNDING_USERS:

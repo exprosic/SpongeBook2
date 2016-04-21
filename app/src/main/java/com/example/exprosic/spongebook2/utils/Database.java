@@ -13,4 +13,12 @@ public class Database {
             strArgs[i] = args[i].toString();
         return db.rawQuery(sql, strArgs);
     }
+
+    public static int getIntFromCursor(Cursor cursor, String columnName) {
+        return cursor.getInt(cursor.getColumnIndex(columnName));
+    }
+
+    public static String getStringFromCursor(Cursor cursor, String columnName) {
+        return cursor.getString(cursor.getColumnIndex(columnName));
+    }
 }

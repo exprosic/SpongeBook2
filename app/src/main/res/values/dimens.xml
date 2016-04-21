@@ -20,5 +20,6 @@
     <dimen name="item_book_add_plus_offset_length">47dp</dimen>
     <dimen name="item_book_add_corner">10dp</dimen>
 
+    <dimen name="item_friend_nick_margin">5dp</dimen>
     <dimen name="item_friend_card_corner_radius">4dp</dimen>
 </resources>

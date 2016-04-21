@@ -4,23 +4,40 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Space;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView;;
+import android.widget.TextView;
+import android.widget.Toast;;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
+import com.example.exprosic.spongebook2.book.BookItem;
+import com.example.exprosic.spongebook2.book.BookProvider;
+import com.example.exprosic.spongebook2.booklist.BookListActivity;
 import com.example.exprosic.spongebook2.utils.Debugging;
+import com.example.exprosic.spongebook2.utils.Sync;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -28,9 +45,12 @@ import butterknife.ButterKnife;
 public class FriendsFragment extends Fragment {
     private static final String TAG = FriendsFragment.class.getSimpleName();
 
+    @Bind(R.id.the_swipe_refresh_layout) SwipeRefreshLayout mSwipeRefreshLayout;
     @Bind(R.id.the_recycler_view) RecyclerView mRecyclerView;
+    private int MENU_ITEM_ADD_FRIEND_ID;
 
     private List<UserItem> mUserItems;
+    private Map<String,BookItem> mBookPool;
 
     public static FriendsFragment newInstance() {
         FriendsFragment fragment = new FriendsFragment();
@@ -47,110 +67,111 @@ public class FriendsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_friends, container, false);
         ButterKnife.bind(this, view);
-        mUserItems = new ArrayList<>();
-        for (int i=0; i<11; ++i)
-            mUserItems.add(null);
+
+        setHasOptionsMenu(true);
+
         int columnsCount = getResources().getInteger(R.integer.item_friend_columns_per_table);
-        mRecyclerView.setAdapter(new FriendAdapter(getContext(), mUserItems, columnsCount));
+        mUserItems = new ArrayList<>();
+        mBookPool = Collections.synchronizedMap(new HashMap<String, BookItem>());
+        mRecyclerView.setAdapter(new FriendAdapter(getContext(), mUserItems, mBookPool, columnsCount));
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadFriends();
+            }
+        });
+        mSwipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.setRefreshing(true);
+                loadFriends();
+            }
+        });
         return view;
     }
-}
-
-class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder> {
-    private static final String TAG = FriendAdapter.class.getSimpleName();
-
-    private Context mContext;
-    private List<UserItem> mUserItems;
-    private int mColumnsCount;
-
-    static class FriendViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.user_info_text) TextView mUserInfoText;
-        @Bind(R.id.preview_books_table) TableLayout mTableLayout;
-        MyTableManager mTableManager;
-        public FriendViewHolder(View view, int columnsCount) {
-            super(view);
-            ButterKnife.bind(this, view);
-            mTableManager = new MyTableManager(mTableLayout, columnsCount);
-        }
-    }
-
-    public FriendAdapter(Context context, List<UserItem> userItems, int columnsCount) {
-        mContext = context;
-        mUserItems = userItems;
-        mColumnsCount = columnsCount;
-    }
 
     @Override
-    public int getItemCount() {
-        return mUserItems.size();
+    public void onStart() {
+        super.onStart();
     }
 
-    @Override
-    public FriendViewHolder onCreateViewHolder(ViewGroup parent, int position) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_friend, parent, false);
-        return new FriendViewHolder(view, mColumnsCount);
-    }
+    private void loadFriends() {
+        MyApplication.getFriendListProvider().fetchFriendList(getContext(), new FriendListProvider.OnFriendListFetchedListener() {
+            @Override
+            public void onFriendListFetched(final List<UserItem> userItems) {
+                Log.d(TAG, String.format(Locale.US, "%d friends loaded", userItems.size()));
+                mUserItems.clear();
+                mUserItems.addAll(userItems);
 
-    @Override
-    public void onBindViewHolder(FriendViewHolder holder, int position) {
-        holder.mTableManager.reset();
-        holder.mUserInfoText.setText(String.format(Locale.US, "position=%1$d%1$d", position));
-        int[] colors = new int[] {Color.GREEN, Color.YELLOW, Color.BLACK, Color.RED, Color.CYAN, Color.BLUE, Color.MAGENTA};
-        for (int i=0; i<(position%4==1||position%4==2?0:7); ++i) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.item_book, null);
-            ImageView imageView = (ImageView)view.findViewById(R.id.the_image_view);
-            TextView textView = (TextView)view.findViewById(R.id.the_text_view);
-            imageView.setBackgroundColor(colors[i]);
-            textView.setText(Integer.toString((i)));
+                int nBooks = 0;
+                for (UserItem userItem: userItems)
+                    nBooks += userItem.previewBookIds.size();
+                Log.d(TAG, String.format(Locale.US, "nbooks = %d", nBooks));
+                final CountDownLatch bookLatch = new CountDownLatch(nBooks);
 
-            holder.mTableManager.addView(view);
-            Debugging.setLayoutParam(view, "rightMargin", mContext.getResources().getDimensionPixelSize(R.dimen.item_book_margin_horizontal));
-        }
-    }
-}
+                for (UserItem userItem: userItems) {
+                    for (String bookId: userItem.previewBookIds) {
+                        MyApplication.getBookProvider().fetchBookById(getContext(), bookId, new BookProvider.OnFetchedListener() {
+                            @Override
+                            public void onBookFetched(BookItem bookItem) {
+                                try {
+                                    if (bookItem == null)
+                                        return;
+                                    if (bookItem.mImageUrl == null)
+                                        bookItem.mImageUrl = BookItem.NO_IMAGE;
+                                    mBookPool.put(bookItem.mBookId, bookItem);
+                                    Log.d(TAG, String.format(Locale.US, "book pool size: %d", mBookPool.size()));
+                                } finally {
+                                    bookLatch.countDown();
+                                }
+                            }
+                        });
+                    }
+                }
 
-class MyTableManager {
-    private Context mContext;
-    private TableLayout mTableLayout;
-    private final int mColumnsCount;
-    private int mNextPosition;
-    private TableRow mLastTableRow;
+                new Thread() {
+                    @Override
+                    public void run() {
+                        Sync.awaitIgnoreInterrupt(bookLatch);
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                            /**/
+                        }
+                        mSwipeRefreshLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSwipeRefreshLayout.setRefreshing(false);
+                                renderFriends();
+                            }
+                        });
 
-    public MyTableManager(TableLayout tableLayout, int columnsCount) {
-        Debugging.myAssert(tableLayout.getChildCount()==0, "passing in non-empty TableLayout");
-        mTableLayout = tableLayout;
-        mContext = tableLayout.getContext();
-        mColumnsCount = columnsCount;
-        mNextPosition = 0;
-        mLastTableRow = null;
-    }
-
-    public void reset() {
-        mTableLayout.removeAllViews();
-        mNextPosition = 0;
-        mLastTableRow = null;
-    }
-
-    public void addView(View view) {
-        if (mNextPosition == 0) {
-            mLastTableRow = new TableRow(mContext);
-            for (int i=0; i<mColumnsCount; ++i) {
-                Space space = new Space(mContext);
-                mLastTableRow.addView(space);
-                setFairWeight(space);
+                    }
+                }.start();
             }
-            mTableLayout.addView(mLastTableRow);
-        }
-        mLastTableRow.removeViewAt(mNextPosition);
-        mLastTableRow.addView(view, mNextPosition);
-        setFairWeight(view);
-        mNextPosition = (mNextPosition+1) % mColumnsCount;
+        });
     }
 
-    private void setFairWeight(View view) {
-        TableRow tableRow = (TableRow)view.getParent();
-        TableRow.LayoutParams params = (TableRow.LayoutParams)view.getLayoutParams();
-        params.weight = 1.0f;
-        view.setLayoutParams(params);
+    private void renderFriends() {
+        Log.d(TAG, "rendering friends' books");
+        mRecyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MENU_ITEM_ADD_FRIEND_ID = menu.add(R.string.add_friend)
+                .setIcon(R.drawable.ic_add_black_24dp)
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+                .getItemId();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == MENU_ITEM_ADD_FRIEND_ID) {
+            AddFriendActivity.start(getContext());
+            return true;
+        }
+
+        return false;
     }
 }
