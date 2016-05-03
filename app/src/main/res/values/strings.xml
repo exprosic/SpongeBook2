@@ -21,6 +21,11 @@
     <string name="nick">昵称</string>
     <string name="search_friends">搜索好友</string>
     <string name="searching_friends">搜索中…</string>
+    <string name="search_friends_failed">搜索失败</string>
+    <string name="loading">加载中…</string>
+    <string name="load_failed">加载失败</string>
+    <string name="accept_request">通过请求</string>
+    <string name="request_accepted">已通过请求</string>
 
     <string name="username_password_empty_msg">用户名和密码不能为空</string>
     <string name="username_password_wrong">用户名或密码错误</string>
@@ -28,6 +33,9 @@
     <string name="search_pattern_empty_msg">不能为空</string>
     <string name="friend_requested_msg">已发送请求</string>
     <string name="friend_request_failed_msg">请求失败</string>
+
+    <string name="borrow_book">借阅</string>
+    <string name="borrow_setting">借阅设置</string>
 
     <string name="book_search_failed">未找到此书</string>
     <string name="format__book_list_inserted_ignored" formatted="false">更新成功，插入%d本，忽略%d本</string>

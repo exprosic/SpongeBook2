@@ -89,12 +89,12 @@ public class BookListFragment extends Fragment {
     private void loadBookList() {
         MyApplication.getBookListProvider().fetchBookList(getActivity(), mUserId, new BookListProvider.OnFetchedListener() {
             @Override
-            public void onBookListFetched(final List<String> bookIds) {
+            public void onBookListFetched(final List<BookListItem> bookListItems) {
                 {
                     // test
                     StringBuilder builder = new StringBuilder();
-                    for (String bookId : bookIds) {
-                        builder.append(bookId);
+                    for (BookListItem bookListItem : bookListItems) {
+                        builder.append(bookListItem.mBookId);
                         builder.append("; ");
                     }
                     Debugging.makeRawToast(getActivity(), Toast.LENGTH_SHORT, builder.toString());
@@ -103,12 +103,12 @@ public class BookListFragment extends Fragment {
                 if (mBookItems != null) {
                     mBookItems.clear();
                 } else {
-                    mBookItems = new ArrayList<BookItem>(bookIds.size());
+                    mBookItems = new ArrayList<BookItem>(bookListItems.size());
                 }
-                final CountDownLatch latch = new CountDownLatch(bookIds.size());
-                for (int i = 0; i < bookIds.size(); ++i) {
+                final CountDownLatch latch = new CountDownLatch(bookListItems.size());
+                for (int i = 0; i < bookListItems.size(); ++i) {
                     final int idx = i;
-                    MyApplication.getBookProvider().fetchBookById(getActivity(), bookIds.get(i), new BookProvider.OnFetchedListener() {
+                    MyApplication.getBookProvider().fetchBookById(getActivity(), bookListItems.get(i).mBookId, new BookProvider.OnFetchedListener() {
                         @Override
                         public void onBookFetched(final BookItem bookItem) {
                             try {
@@ -153,9 +153,9 @@ public class BookListFragment extends Fragment {
             mRecyclerView.getAdapter().notifyDataSetChanged();
         } else {
             if (MyApplication.isMyself(mUserId)) {
-                mRecyclerView.setAdapter(new MyBookListAdapter(getActivity(), mBookItems));
+                mRecyclerView.setAdapter(new MyBookListAdapter(getActivity(), mUserId, mBookItems));
             } else {
-                mRecyclerView.setAdapter(new BookListAdapter(getActivity(), mBookItems));
+                mRecyclerView.setAdapter(new BookListAdapter(getActivity(), mUserId, mBookItems));
             }
         }
     }

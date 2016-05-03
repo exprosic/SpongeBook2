@@ -25,18 +25,23 @@ public class FriendSearcher {
         void onFriendSearched(List<UserItem> userItems);
     }
 
-    public void fetchUsers(Context context, String pattern, final OnFriendSearchedListener listener) {
-        MyApplication.getUnauthorizedClient().get(context, URLManager.searchFriends(pattern), new StringFailureJsonResponseHandler() {
+    public void fetchUsers(final Context context, String pattern, final OnFriendSearchedListener listener) {
+        MyApplication.getAuthorizedClient().get(context, URLManager.searchFriends(pattern), new StringFailureJsonResponseHandler() {
             @Override
             public void onSuccess(int status, Header[] headers, JSONArray jsonArray) {
                 try {
                     List<UserItem> userItems = new ArrayList<>(jsonArray.length());
                     for (int i=0; i<jsonArray.length(); ++i)
-                        userItems.add(UserItem.parseJSON(jsonArray.getJSONObject(i)));
+                        userItems.add(UserItem.fromJsonObject(jsonArray.getJSONObject(i)));
                     listener.onFriendSearched(userItems);
                 } catch (JSONException e) {
                     Log.e(TAG, "wrong user list response", new Throwable());
                 }
+            }
+
+            @Override
+            public void onFailure(int status, Header[] headers, String response, Throwable throwable) {
+                listener.onFriendSearched(null);
             }
         });
     }

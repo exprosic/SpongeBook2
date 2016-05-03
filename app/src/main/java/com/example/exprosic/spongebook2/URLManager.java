@@ -11,7 +11,7 @@ import java.util.List;
  * Created by exprosic on 4/8/2016.
  */
 public class URLManager {
-    public static String HOST = "http://10.2.47.77:8000/";
+    public static String HOST = "http://10.0.47.239:8000/";
 //    public static String HOST = "http://123.57.56.221:8000/";
 
     public static String bookInfoFromId(String bookId) {
@@ -41,7 +41,7 @@ public class URLManager {
     public static String friendList = toHostUrl("friends/");
     public static class requestFriend {
         public static String URL(int userId) {
-            return toHostUrl("friend/request/%d/", userId);
+            return toHostUrl("friend/request/%s/", userId);
         }
         public static RequestParams params() {
             return new RequestParams();
@@ -49,18 +49,13 @@ public class URLManager {
     }
     public static class acceptFriend {
         public static String URL(int userId) {
-            return toHostUrl("friend/accept/%d/", userId);
+            return toHostUrl("friend/accept/%s/", userId);
         }
         public static RequestParams params() {
             return new RequestParams();
         }
     }
-    public static class friendRequests {
-        public static String URL = toHostUrl("friend/requests/");
-        public static RequestParams params() {
-            return new RequestParams();
-        }
-    }
+    public static String friendRequests = toHostUrl("friend/requests/");
     public static String searchFriends(String pattern) {
         return toHostUrl("users/?pattern=%s", pattern);
     }

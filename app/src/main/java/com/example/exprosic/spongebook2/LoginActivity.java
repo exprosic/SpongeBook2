@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.exprosic.spongebook2.booklist.BookListItem;
 import com.example.exprosic.spongebook2.utils.InputMethodUtils;
 import com.example.exprosic.spongebook2.utils.JSON;
 import com.example.exprosic.spongebook2.utils.net.StringFailureJsonResponseHandler;
@@ -76,8 +77,8 @@ public class LoginActivity extends AppCompatActivity {
                    MyApplication.setAuthorizeToken(token);
                    MyApplication.setMyUserId(userId);
 
-                   List<String> bookIds = JSON.toStringList(jsonObject.getJSONArray("bookIds"));
-                   MyApplication.getBookListProvider().syncDb(bookIds);
+                   List<BookListItem> bookListItems = BookListItem.fromJsonArray(jsonObject.getJSONArray("books"));
+                   MyApplication.getBookListProvider().syncDb(bookListItems);
 
                    MainActivity.start(LoginActivity.this);
                    finish();

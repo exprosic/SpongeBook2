@@ -2,6 +2,7 @@ package com.example.exprosic.spongebook2.friend;
 
 import android.util.Log;
 
+import com.example.exprosic.spongebook2.booklist.BookListItem;
 import com.example.exprosic.spongebook2.utils.JSON;
 
 import org.json.JSONArray;
@@ -17,28 +18,28 @@ import java.util.List;
 public class UserItem {
     public static final String TAG = UserItem.class.getSimpleName();
 
-    public int userId;
-    public String nick;
-    public int gender;
-    public String location;
-    public List<String> previewBookIds;
+    public int mUserId;
+    public String mNick;
+    public int mGender;
+    public String mLocation;
+    public List<BookListItem> mPreviewBookItems;
 
-    public UserItem(int userId, String nick, int gender, String location, List<String> previewBookIds) {
-        this.userId = userId;
-        this.nick = nick;
-        this.gender = gender;
-        this.location = location;
-        this.previewBookIds = previewBookIds;
+    public UserItem(int userId, String nick, int gender, String location, List<BookListItem> previewBookItems) {
+        mUserId = userId;
+        mNick = nick;
+        mGender = gender;
+        mLocation = location;
+        mPreviewBookItems = previewBookItems;
     }
 
-    public static UserItem parseJSON(JSONObject jsonObject) {
+    public static UserItem fromJsonObject(JSONObject jsonObject) {
         try {
             int userId = jsonObject.getInt("userId");
             String nick = jsonObject.getString("nick");
             int gender = jsonObject.getInt("gender");
-            String locatoin = jsonObject.getString("location");
-            List<String> previewBookIds = JSON.toStringList(jsonObject.getJSONArray("previewBookIds"));
-            return new UserItem(userId, nick, gender, locatoin, previewBookIds);
+            String location = jsonObject.getString("location");
+            List<BookListItem> previewBookItems = BookListItem.fromJsonArray(jsonObject.getJSONArray("previewBookItems"));
+            return new UserItem(userId, nick, gender, location, previewBookItems);
         } catch (JSONException e) {
             Log.e(TAG, "wrong UserItem JSON format", new Throwable());
             return null;

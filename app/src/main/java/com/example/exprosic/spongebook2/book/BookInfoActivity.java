@@ -7,12 +7,16 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
+import com.example.exprosic.spongebook2.utils.Debugging;
 import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
@@ -31,10 +35,27 @@ public class BookInfoActivity extends AppCompatActivity {
     ImageView mBookImage;
     @Bind(R.id.book_infos)
     LinearLayout mBookInfos;
+    @Bind(R.id.button_borrow)
+    Button mButtonBorrow;
 
     /* params */
-    private static String PARAM_BOOKID = "bookId";
-    private String bookId;
+    private static final String PARAM_BOOKID = "bookId";
+    private String mBookId;
+    private static final String PARAM_USERID = "userId";
+    private int mUserId; // -1 for not provided
+
+    public static void start(Context context, String bookId) {
+        Intent intent = new Intent(context, BookInfoActivity.class);
+        intent.putExtra(PARAM_BOOKID, bookId);
+        context.startActivity(intent);
+    }
+
+    public static void startWithUser(Context context, String bookId, int userId) {
+        Intent intent = new Intent(context, BookInfoActivity.class);
+        intent.putExtra(PARAM_BOOKID, bookId);
+        intent.putExtra(PARAM_USERID, userId);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,18 +67,37 @@ public class BookInfoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         dumpInfoFromIntent(getIntent());
-        fetchBookInfo(bookId);
+        fetchBookInfo(mBookId);
     }
 
     private void dumpInfoFromIntent(Intent intent) {
-        bookId = intent.getStringExtra(PARAM_BOOKID);
-        assert bookId != null;
-    }
+        mBookId = intent.getStringExtra(PARAM_BOOKID);
+        mUserId = intent.getIntExtra(PARAM_USERID, -1);
+        assert mBookId != null;
 
-    public static void startWithBookId(Context context, String bookId) {
-        Intent intent = new Intent(context, BookInfoActivity.class);
-        intent.putExtra(PARAM_BOOKID, bookId);
-        context.startActivity(intent);
+        if (mUserId != -1) {
+            mButtonBorrow.setVisibility(View.VISIBLE);
+            if (MyApplication.isMyself(mUserId)) {
+                mButtonBorrow.setText(R.string.borrow_setting);
+                mButtonBorrow.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: setting
+                        Debugging.makeRawToast(BookInfoActivity.this, Toast.LENGTH_SHORT, "setting");
+                    }
+                });
+            } else {
+                if ()
+                mButtonBorrow.setText(R.string.borrow_book);
+                mButtonBorrow.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: borrow
+                        Debugging.makeRawToast(BookInfoActivity.this, Toast.LENGTH_SHORT, "borrow");
+                    }
+                });
+            }
+        }
     }
 
     public void fetchBookInfo(final String bookId) {

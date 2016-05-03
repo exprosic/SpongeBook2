@@ -70,10 +70,8 @@ public class FriendsFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        int columnsCount = getResources().getInteger(R.integer.item_friend_columns_per_table);
         mUserItems = new ArrayList<>();
         mBookPool = Collections.synchronizedMap(new HashMap<String, BookItem>());
-        mRecyclerView.setAdapter(new FriendAdapter(getContext(), mUserItems, mBookPool, columnsCount));
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -90,71 +88,46 @@ public class FriendsFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
+    private boolean needForceRefresh = false;
     private void loadFriends() {
-        MyApplication.getFriendListProvider().fetchFriendList(getContext(), new FriendListProvider.OnFriendListFetchedListener() {
+        FriendListProvider.OnFriendListFetchedListener listener = new FriendListProvider.OnFriendListFetchedListener() {
             @Override
             public void onFriendListFetched(final List<UserItem> userItems) {
                 Log.d(TAG, String.format(Locale.US, "%d friends loaded", userItems.size()));
                 mUserItems.clear();
                 mUserItems.addAll(userItems);
 
-                int nBooks = 0;
-                for (UserItem userItem: userItems)
-                    nBooks += userItem.previewBookIds.size();
-                Log.d(TAG, String.format(Locale.US, "nbooks = %d", nBooks));
-                final CountDownLatch bookLatch = new CountDownLatch(nBooks);
-
-                for (UserItem userItem: userItems) {
-                    for (String bookId: userItem.previewBookIds) {
-                        MyApplication.getBookProvider().fetchBookById(getContext(), bookId, new BookProvider.OnFetchedListener() {
-                            @Override
-                            public void onBookFetched(BookItem bookItem) {
-                                try {
-                                    if (bookItem == null)
-                                        return;
-                                    if (bookItem.mImageUrl == null)
-                                        bookItem.mImageUrl = BookItem.NO_IMAGE;
-                                    mBookPool.put(bookItem.mBookId, bookItem);
-                                    Log.d(TAG, String.format(Locale.US, "book pool size: %d", mBookPool.size()));
-                                } finally {
-                                    bookLatch.countDown();
-                                }
-                            }
-                        });
-                    }
-                }
-
-                new Thread() {
+                new BookPool(getContext(), mBookPool, mUserItems).onLoaded(new Runnable() {
                     @Override
                     public void run() {
-                        Sync.awaitIgnoreInterrupt(bookLatch);
-                        try {
-                            Thread.sleep(3000);
-                        } catch (InterruptedException e) {
-                            /**/
-                        }
                         mSwipeRefreshLayout.post(new Runnable() {
                             @Override
                             public void run() {
                                 mSwipeRefreshLayout.setRefreshing(false);
+                                needForceRefresh = true;
                                 renderFriends();
                             }
                         });
-
                     }
-                }.start();
+                });
             }
-        });
+        };
+
+        if (needForceRefresh) {
+            MyApplication.getFriendListProvider().forceDownloadFriendList(getContext(), listener);
+        } else {
+            MyApplication.getFriendListProvider().fetchFriendList(getContext(),listener);
+        }
     }
 
     private void renderFriends() {
         Log.d(TAG, "rendering friends' books");
-        mRecyclerView.getAdapter().notifyDataSetChanged();
+        if (mRecyclerView.getAdapter() == null) {
+            int columnsCount = getResources().getInteger(R.integer.item_friend_columns_per_table);
+            mRecyclerView.setAdapter(new FriendAdapter(getContext(), mUserItems, mBookPool, columnsCount));
+        } else {
+            mRecyclerView.getAdapter().notifyDataSetChanged();
+        }
     }
 
     @Override

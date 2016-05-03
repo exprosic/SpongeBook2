@@ -25,6 +25,7 @@ import butterknife.ButterKnife;
 public class BookListAdapter extends RecyclerView.Adapter {
     protected Context mContext;
     protected List<BookItem> mBookItems;
+    protected int mUserId;
 
     static class BookViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.the_text_view)
@@ -43,8 +44,13 @@ public class BookListAdapter extends RecyclerView.Adapter {
     }
 
     public BookListAdapter(Context context, List<BookItem> bookItems) {
+        this(context, -1, bookItems);
+    }
+
+    public BookListAdapter(Context context, int userId, List<BookItem> bookItems) {
         mContext = context;
         mBookItems = bookItems;
+        mUserId = userId;
     }
 
     protected View inflateBookItemView(ViewGroup parent) {
@@ -62,11 +68,11 @@ public class BookListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (!(holder instanceof BookViewHolder))
             throw new AssertionError("non-BookViewHolder passed to BooksAdapter");
-        BookViewHolder bookViewHolder = (BookViewHolder)holder;
+        BookViewHolder bookViewHolder = (BookViewHolder) holder;
 
         String title = mBookItems.get(position).mTitle;
         if (title.length() > 8)
-            title = title.substring(0,7) + "...";
+            title = title.substring(0, 7) + "...";
         bookViewHolder.mTextView.setText(title);
         bindImage(bookViewHolder);
         bookViewHolder.itemView.setOnClickListener(onItemClick(bookViewHolder));
@@ -89,9 +95,9 @@ public class BookListAdapter extends RecyclerView.Adapter {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BookItem bookItem =  mBookItems.get(holder.getBookListPosition());
+                BookItem bookItem = mBookItems.get(holder.getBookListPosition());
                 if (bookItem.isValid())
-                    BookInfoActivity.startWithBookId(mContext, bookItem.mBookId);
+                    BookInfoActivity.startWithUser(mContext, bookItem.mBookId, mUserId);
             }
         };
     }

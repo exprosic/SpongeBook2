@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.URLManager;
+import com.example.exprosic.spongebook2.booklist.BookListItem;
 import com.example.exprosic.spongebook2.utils.Database;
 import com.example.exprosic.spongebook2.utils.Sync;
 import com.example.exprosic.spongebook2.utils.net.StringFailureJsonResponseHandler;
@@ -39,7 +40,7 @@ public class FriendListProvider {
     }
 
     public interface OnFriendListFetchedListener {
-        void onFriendListFetched(List<UserItem> userIds);
+        void onFriendListFetched(List<UserItem> userItems);
     }
 
     public void fetchFriendList(Context context, final OnFriendListFetchedListener listener) {
@@ -59,6 +60,11 @@ public class FriendListProvider {
         }
     }
 
+    public void forceDownloadFriendList(Context context, final OnFriendListFetchedListener listener) {
+        MyApplication.putGlobalPreferencesBoolean(PREF_IS_SYNCHRONIZED, false);
+        fetchFriendList(context, listener);
+    }
+
     private void fetchFriendListFromDb(OnFriendListFetchedListener listener) {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         Cursor cursor = Database.rawQuery(db, FriendInfoDbContract.SQL_QUERY_FRIEND_INFO);
@@ -72,11 +78,11 @@ public class FriendListProvider {
                 String location = Database.getStringFromCursor(cursor, FriendInfoDbContract.COLUMN_NAME_LOCATION);
 
                 Cursor bookCursor = Database.rawQuery(db, FriendPreviewBookIdsDbContract.SQL_QUERY_BOOK_ID, userId);
-                List<String> bookIds = new ArrayList<>(bookCursor.getCount());
+                List<BookListItem> bookListItems = new ArrayList<>(bookCursor.getCount());
                 while (bookCursor.moveToNext())
-                    bookIds.add(Database.getStringFromCursor(bookCursor, FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID));
+                    bookListItems.add(new BookListItem(Database.getStringFromCursor(bookCursor, FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID)));
 
-                userItems.add(new UserItem(userId, nick, gender, location, bookIds));
+                userItems.add(new UserItem(userId, nick, gender, location, bookListItems));
             }
         } finally {
             cursor.close();
@@ -88,19 +94,21 @@ public class FriendListProvider {
     private void insertFriendListToDb(List<UserItem> userItems) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         db.beginTransaction();
+        db.execSQL(FriendInfoDbContract.SQL_CLEAR_TABLE);
+        db.execSQL(FriendPreviewBookIdsDbContract.SQL_CLEAR_TABLE);
         try {
             for (UserItem userItem : userItems) {
                 ContentValues values = new ContentValues();
-                values.put(FriendInfoDbContract.COLUMN_NAME_FRIEND_USER_ID, userItem.userId);
-                values.put(FriendInfoDbContract.COLUMN_NAME_FRIEND_NICK, userItem.nick);
-                values.put(FriendInfoDbContract.COLUMN_NAME_GENDER, userItem.gender);
-                values.put(FriendInfoDbContract.COLUMN_NAME_LOCATION, userItem.location);
+                values.put(FriendInfoDbContract.COLUMN_NAME_FRIEND_USER_ID, userItem.mUserId);
+                values.put(FriendInfoDbContract.COLUMN_NAME_FRIEND_NICK, userItem.mNick);
+                values.put(FriendInfoDbContract.COLUMN_NAME_GENDER, userItem.mGender);
+                values.put(FriendInfoDbContract.COLUMN_NAME_LOCATION, userItem.mLocation);
                 db.insert(FriendInfoDbContract.TABLE_NAME, null, values);
 
-                for (String bookId: userItem.previewBookIds) {
+                for (BookListItem bookListItem: userItem.mPreviewBookItems) {
                     values = new ContentValues();
-                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_USER_ID, userItem.userId);
-                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID, bookId);
+                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_USER_ID, userItem.mUserId);
+                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID, bookListItem.mBookId);
                     db.insert(FriendPreviewBookIdsDbContract.TABLE_NAME, null, values);
                 }
             }
@@ -118,7 +126,7 @@ public class FriendListProvider {
                 try {
                     List<UserItem> userItems = new ArrayList<>(jsonArray.length());
                     for (int i=0; i<jsonArray.length(); ++i)
-                        userItems.add(UserItem.parseJSON(jsonArray.getJSONObject(i)));
+                        userItems.add(UserItem.fromJsonObject(jsonArray.getJSONObject(i)));
                     listener.onFriendListFetched(userItems);
                 } catch (JSONException e) {
                     Log.e(TAG, "wrong friend list response", new Throwable());
@@ -185,18 +193,22 @@ public class FriendListProvider {
     }
 
     public void fetchFriendRequests(Context context, final OnFriendRequestsFetchedListener listener) {
-        MyApplication.getAuthorizedClient().post(context, URLManager.friendRequests.URL, URLManager.friendRequests.params(),
-                new StringFailureJsonResponseHandler() {
+        MyApplication.getAuthorizedClient().get(context, URLManager.friendRequests, new StringFailureJsonResponseHandler() {
                     @Override
                     public void onSuccess(int status, Header[] headers, JSONArray jsonArray) {
                         try {
                             List<UserItem> userItems = new ArrayList<>(jsonArray.length());
                             for (int i=0; i<jsonArray.length(); ++i)
-                                userItems.add(UserItem.parseJSON(jsonArray.getJSONObject(i)));
+                                userItems.add(UserItem.fromJsonObject(jsonArray.getJSONObject(i)));
                             listener.onFriendRequestsFetched(userItems);
                         } catch (JSONException e) {
                             Log.e(TAG, "friend requests response error", new Throwable());
                         }
+                    }
+
+                    @Override
+                    public void onFailure(int status, Header[] headers, String response, Throwable throwable) {
+                        listener.onFriendRequestsFetched(null);
                     }
                 });
     }

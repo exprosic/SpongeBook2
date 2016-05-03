@@ -42,8 +42,8 @@ public class MyBookListAdapter extends BookListAdapter {
         }
     }
 
-    public MyBookListAdapter(Context context, List<BookItem> bookItems) {
-        super(context, bookItems);
+    public MyBookListAdapter(Context context, int userId, List<BookItem> bookItems) {
+        super(context, userId, bookItems);
     }
 
     @Override

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookItem;
 import com.example.exprosic.spongebook2.booklist.BookListActivity;
+import com.example.exprosic.spongebook2.booklist.BookListItem;
 import com.example.exprosic.spongebook2.utils.Debugging;
 import com.squareup.picasso.Picasso;
 
@@ -37,14 +38,16 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
     protected int mColumnsCount;
 
     static class FriendViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.text_user_info)
+//        @Bind(R.id.text_user_info)
         TextView mUserInfoText;
-        @Bind(R.id.table_preview_books)
+//        @Bind(R.id.table_preview_books)
         TableLayout mTableLayout;
         MyTableManager mTableManager;
         public FriendViewHolder(View view, int columnsCount) {
             super(view);
-            ButterKnife.bind(this, view);
+            mUserInfoText = (TextView)view.findViewById(R.id.text_user_info);
+            mTableLayout = (TableLayout)view.findViewById(R.id.table_preview_books);
+//            ButterKnife.bind(this, view);
             mTableManager = new MyTableManager(mTableLayout, columnsCount);
         }
     }
@@ -70,10 +73,10 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
     @Override
     public void onBindViewHolder(final FriendViewHolder holder, int position) {
         UserItem userItem = mUserItems.get(position);
-        holder.mUserInfoText.setText(userItem.nick);
+        holder.mUserInfoText.setText(userItem.mNick);
         holder.mTableManager.reset();
-        for (String bookId: userItem.previewBookIds) {
-            BookItem bookItem = mBookPool.get(bookId);
+        for (BookListItem bookListItem: userItem.mPreviewBookItems) {
+            BookItem bookItem = mBookPool.get(bookListItem.mBookId);
             Debugging.myAssert(bookItem!=null, String.format(Locale.US, "bookItem is null, book pool size = %d, itemCount=%d", mBookPool.size(), getItemCount()));
             View bookView = LayoutInflater.from(mContext).inflate(R.layout.item_book, null);
             holder.mTableManager.addView(bookView);
@@ -91,7 +94,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int userId = mUserItems.get(holder.getAdapterPosition()).userId;
+                int userId = mUserItems.get(holder.getAdapterPosition()).mUserId;
                 BookListActivity.startByUserId(mContext, userId);
             }
         });

@@ -21,4 +21,8 @@ public class Database {
     public static String getStringFromCursor(Cursor cursor, String columnName) {
         return cursor.getString(cursor.getColumnIndex(columnName));
     }
+
+    public static double getDoubleFromCursor(Cursor cursor, String columnName) {
+        return cursor.getDouble(cursor.getColumnIndex(columnName));
+    }
 }

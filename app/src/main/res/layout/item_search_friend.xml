@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardBackgroundColor="@color/cardview_light_background">
     <LinearLayout
@@ -14,7 +14,6 @@
             android:layout_height="wrap_content">
             <TextView
                 android:id="@+id/text_user_info"
-                android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <Button
@@ -24,13 +23,13 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <Space
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_friend_nick_margin" />
+            android:layout_height="match_parent"
+            android:layout_width="@dimen/item_friend_nick_margin" />
         <TableLayout
             android:id="@+id/table_preview_books"
             android:layout_weight="1"
             android:layout_width="0dp"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
         </TableLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>
