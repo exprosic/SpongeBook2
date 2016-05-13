@@ -26,6 +26,7 @@
     <string name="load_failed">加载失败</string>
     <string name="accept_request">通过请求</string>
     <string name="request_accepted">已通过请求</string>
+    <string name="submit">提交</string>
 
     <string name="username_password_empty_msg">用户名和密码不能为空</string>
     <string name="username_password_wrong">用户名或密码错误</string>
@@ -36,6 +37,9 @@
 
     <string name="borrow_book">借阅</string>
     <string name="borrow_setting">借阅设置</string>
+    <string name="borrowable">可借阅</string>
+    <string name="borrow_deposit">押金</string>
+    <string name="borrow_rental">日租金</string>
 
     <string name="book_search_failed">未找到此书</string>
     <string name="format__book_list_inserted_ignored" formatted="false">更新成功，插入%d本，忽略%d本</string>

@@ -40,7 +40,7 @@ public class TestEntryActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_entry);
         ButterKnife.bind(this);
-//        BookInfoActivity.start(this, "jd,10592815");
+//        BookInfoActivity.startWithBookId(this, "jd,10592815");
 //        MultiscanActivity.startAlone(this);
 //        findServer();
         LoginActivity.startAlone(this);

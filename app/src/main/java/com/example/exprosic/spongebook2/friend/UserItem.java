@@ -2,14 +2,12 @@ package com.example.exprosic.spongebook2.friend;
 
 import android.util.Log;
 
-import com.example.exprosic.spongebook2.booklist.BookListItem;
-import com.example.exprosic.spongebook2.utils.JSON;
+import com.example.exprosic.spongebook2.booklist.BookshelfItem;
+import com.example.exprosic.spongebook2.booklist.BorrowableBookshelfItem;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,9 +20,9 @@ public class UserItem {
     public String mNick;
     public int mGender;
     public String mLocation;
-    public List<BookListItem> mPreviewBookItems;
+    public List<BookshelfItem> mPreviewBookItems;
 
-    public UserItem(int userId, String nick, int gender, String location, List<BookListItem> previewBookItems) {
+    public UserItem(int userId, String nick, int gender, String location, List<BookshelfItem> previewBookItems) {
         mUserId = userId;
         mNick = nick;
         mGender = gender;
@@ -38,7 +36,7 @@ public class UserItem {
             String nick = jsonObject.getString("nick");
             int gender = jsonObject.getInt("gender");
             String location = jsonObject.getString("location");
-            List<BookListItem> previewBookItems = BookListItem.fromJsonArray(jsonObject.getJSONArray("previewBookItems"));
+            List<BookshelfItem> previewBookItems = BorrowableBookshelfItem.fromJsonArray(jsonObject.getJSONArray("previewBookItems"));
             return new UserItem(userId, nick, gender, location, previewBookItems);
         } catch (JSONException e) {
             Log.e(TAG, "wrong UserItem JSON format", new Throwable());

@@ -20,6 +20,10 @@ public class Debugging {
         Toast.makeText(context, String.format(Locale.CHINESE, format, args), duration).show();
     }
 
+    public static void myAssertFalse() {
+        myAssert(false, "");
+    }
+
     public static void myAssert(boolean assertion, String msg) {
         if (!assertion)
             throw new AssertionError(msg);

@@ -18,17 +18,13 @@ import android.widget.Toast;
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookItem;
-import com.example.exprosic.spongebook2.book.BookProvider;
 import com.example.exprosic.spongebook2.utils.Debugging;
-import com.example.exprosic.spongebook2.utils.Sync;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -90,7 +86,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 }
                 mUserItems.clear();
                 mUserItems.addAll(userItems);
-                new BookPool(AddFriendActivity.this, mBookPool, mUserItems).onLoaded(new Runnable() {
+                new FriendsBookPool(AddFriendActivity.this, mBookPool, mUserItems).onLoaded(new Runnable() {
                     @Override
                     public void run() {
                         mSearchButton.post(new Runnable() {
@@ -163,7 +159,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 Debugging.makeToast(AddFriendActivity.this, Toast.LENGTH_SHORT, "%d", userItems.size());
                 mUserItems.clear();
                 mUserItems.addAll(userItems);
-                new BookPool(AddFriendActivity.this, mBookPool, mUserItems).onLoaded(new Runnable() {
+                new FriendsBookPool(AddFriendActivity.this, mBookPool, mUserItems).onLoaded(new Runnable() {
                     @Override
                     public void run() {
                         mSearchButton.post(new Runnable() {

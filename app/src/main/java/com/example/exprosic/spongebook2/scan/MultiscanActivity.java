@@ -15,7 +15,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,9 +22,11 @@ import android.widget.Toast;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
+import com.example.exprosic.spongebook2.book.BookInfoActivity;
 import com.example.exprosic.spongebook2.book.BookItem;
 import com.example.exprosic.spongebook2.book.BookProvider;
 import com.example.exprosic.spongebook2.booklist.BookListAdapter;
+import com.example.exprosic.spongebook2.booklist.BookshelfItem;
 import com.example.exprosic.spongebook2.booklist.BookListProvider;
 import com.example.exprosic.spongebook2.scan.camera.AmbientLightManager;
 import com.example.exprosic.spongebook2.scan.camera.CameraManager;
@@ -37,11 +38,12 @@ import com.google.zxing.Result;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -58,7 +60,8 @@ public class MultiscanActivity extends AppCompatActivity {
     @Bind(R.id.the_recycler_view) RecyclerView mRecyclerView;
     @SuppressWarnings("unused") @Bind(R.id.the_button) Button mButton;
 
-    private List<BookItem> mBookItems;
+    private List<BookshelfItem> mBookshelfItems;
+    private Map<String,BookItem> mBookPool;
 
     // camera
     private boolean hasSurface;
@@ -80,8 +83,9 @@ public class MultiscanActivity extends AppCompatActivity {
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mBookItems = Collections.synchronizedList(new ArrayList<BookItem>());
-        mRecyclerView.setAdapter(new BookListAdapter(this, mBookItems) {
+        mBookshelfItems = new Vector<>();
+        mBookPool = new ConcurrentHashMap<>();
+        mRecyclerView.setAdapter(new BookListAdapter(this, mBookPool, mBookshelfItems) {
             // 不然的话每个item都有整屏宽
             @Override
             protected View inflateBookItemView(ViewGroup parent) {
@@ -90,6 +94,11 @@ public class MultiscanActivity extends AppCompatActivity {
                 params.width = getResources().getDimensionPixelSize(R.dimen.item_book_image_width);
                 view.setLayoutParams(params);
                 return view;
+            }
+
+            @Override
+            protected void clickBookshelfItem(BookshelfItem bookshelfItem, BookItem bookItem) {
+                BookInfoActivity.startWithBookId(mContext, bookItem.mBookId);
             }
         });
 
@@ -222,10 +231,15 @@ public class MultiscanActivity extends AppCompatActivity {
     }
 
     private void handleISBN(String isbn) {
+        // 用临时的BookshelfItem来占位，其中的bookId是一个临时的整数，只作临时标识之用
         Toast.makeText(this, isbn, Toast.LENGTH_SHORT).show();
-        final int idx = mBookItems.size();
+        final int idx = mBookshelfItems.size();
+        final String tmpBookId = Integer.toString(idx);
         final BookItem placeHolder = BookItem.getPlaceHolder();
-        mBookItems.add(placeHolder);
+        final BookshelfItem placeHolderItem = new BookshelfItem(-1, tmpBookId);
+        mBookPool.put(tmpBookId, placeHolder);
+        mBookshelfItems.add(placeHolderItem);
+
         mRecyclerView.getAdapter().notifyItemInserted(idx);
         mRecyclerView.getLayoutManager().scrollToPosition(mRecyclerView.getAdapter().getItemCount()-1);
         MyApplication.getBookProvider().fetchBookByIsbn(this, isbn, new BookProvider.OnFetchedListener() {
@@ -234,12 +248,12 @@ public class MultiscanActivity extends AppCompatActivity {
                 if (bookItem == null) {
                     // 未找到
                     placeHolder.setInvalid();
-                    mRecyclerView.getAdapter().notifyItemChanged(mBookItems.indexOf(placeHolder));
+                    mRecyclerView.getAdapter().notifyItemChanged(idx);
                     return;
                 }
                 if (bookItem.mImageUrl == null)
                     bookItem.mImageUrl = BookItem.NO_IMAGE;
-                mBookItems.set(idx, bookItem);
+                mBookPool.put(tmpBookId, bookItem);
                 mRecyclerView.getAdapter().notifyItemChanged(idx);
             }
         });
@@ -248,10 +262,12 @@ public class MultiscanActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @OnClick(R.id.the_button)
     void updateBookList() {
-        List<String> bookIds = new ArrayList<>(mBookItems.size());
-        for (int i = 0; i < mBookItems.size(); ++i)
-            if (mBookItems.get(i).isValid())
-                bookIds.add(mBookItems.get(i).mBookId);
+        List<String> bookIds = new ArrayList<>(mBookshelfItems.size());
+        for (int i = 0; i < mBookshelfItems.size(); ++i) {
+            BookItem bookItem = mBookPool.get(mBookshelfItems.get(i).getBookId());
+            if (bookItem.isValid())
+                bookIds.add(bookItem.mBookId);
+        }
         MyApplication.getBookListProvider().postBookList(this, bookIds, new BookListProvider.OnBookListUpdatedListener() {
             @Override
             public void onBookListUpdated(int insertedCount, int ignoredCount) {

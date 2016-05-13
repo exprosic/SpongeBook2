@@ -16,7 +16,7 @@ public class OpenCameraInterface {
     public static final int NO_REQUESTED_CAMERA = -1;
 
     /**
-     * Opens the requested camera with {@link Camera#open(int)}, if one exists.
+     * Opens the requested camera select {@link Camera#open(int)}, if one exists.
      *
      * @param cameraId camera ID of the camera to use. A negative value
      *  or {@link #NO_REQUESTED_CAMERA} means "no preference"

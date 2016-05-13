@@ -17,6 +17,7 @@ import com.example.exprosic.spongebook2.utils.JSON;
 import com.example.exprosic.spongebook2.utils.StringUtils;
 import com.example.exprosic.spongebook2.utils.Sync;
 import com.example.exprosic.spongebook2.utils.net.StringFailureJsonResponseHandler;
+import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONException;
@@ -43,7 +44,7 @@ public class BookProvider {
 
     private Sync.LoopRunnableThread mDbThread = Sync.newLoopRunnableThreadHandler();
 
-    public void fetchBookById(final Context context, final String bookId, final OnFetchedListener listener) {
+    public synchronized void fetchBookById(final Context context, final String bookId, final OnFetchedListener listener) {
         mDbThread.addTask(new Runnable() {
             @Override
             public void run() {
@@ -62,8 +63,10 @@ public class BookProvider {
         });
     }
 
-    public void fetchBookByIsbn(Context context, String isbn, OnFetchedListener listener) {
-        MyApplication.getUnauthorizedClient().get(context, URLManager.bookInfoFromIsbn(isbn),
+    public synchronized void fetchBookByIsbn(Context context, String isbn, OnFetchedListener listener) {
+        AsyncHttpClient client = MyApplication.getUnauthorizedClient();
+//        client.setMaxRetriesAndTimeout(1, 30*1000);
+        client.get(context, URLManager.bookInfoFromIsbn(isbn),
                 responseHandlerWithListener(listener));
     }
 
@@ -141,8 +144,8 @@ public class BookProvider {
             public void onSuccess(int status, Header[] headers, JSONObject jsonObject) {
                 try {
                     String title = jsonObject.getString("title");
-                    String bookId = jsonObject.getString("bookid");
-                    String imageUrl = jsonObject.optString("imageurl", null);
+                    String bookId = jsonObject.getString("bookId");
+                    String imageUrl = jsonObject.optString("imageUrl", null);
                     // /n0/太大，/n3/比较合适
                     if (imageUrl != null)
                         imageUrl = imageUrl.replace("/n0/", "/n3/");

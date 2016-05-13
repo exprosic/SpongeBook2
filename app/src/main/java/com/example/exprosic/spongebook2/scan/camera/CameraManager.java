@@ -176,7 +176,7 @@ public class CameraManager {
 
     /**
      * A single preview frame will be returned to the handler supplied. The data will arrive as byte[]
-     * in the message.obj field, with width and height encoded as message.arg1 and message.arg2,
+     * in the message.obj field, select width and height encoded as message.arg1 and message.arg2,
      * respectively.
      *
      * @param handler The handler to send the message to.
@@ -192,7 +192,7 @@ public class CameraManager {
 
     /**
      * Calculates the framing rect which the UI should draw to show the user where to place the
-     * barcode. This target helps with alignment as well as forces the user to hold the device
+     * barcode. This target helps select alignment as well as forces the user to hold the device
      * far enough away to ensure the image will be in focus.
      *
      * @return The rectangle to draw on screen in window coordinates.

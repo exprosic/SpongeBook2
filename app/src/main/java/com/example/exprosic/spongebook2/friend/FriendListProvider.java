@@ -10,7 +10,7 @@ import android.util.Log;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.URLManager;
-import com.example.exprosic.spongebook2.booklist.BookListItem;
+import com.example.exprosic.spongebook2.booklist.BookshelfItem;
 import com.example.exprosic.spongebook2.utils.Database;
 import com.example.exprosic.spongebook2.utils.Sync;
 import com.example.exprosic.spongebook2.utils.net.StringFailureJsonResponseHandler;
@@ -78,11 +78,11 @@ public class FriendListProvider {
                 String location = Database.getStringFromCursor(cursor, FriendInfoDbContract.COLUMN_NAME_LOCATION);
 
                 Cursor bookCursor = Database.rawQuery(db, FriendPreviewBookIdsDbContract.SQL_QUERY_BOOK_ID, userId);
-                List<BookListItem> bookListItems = new ArrayList<>(bookCursor.getCount());
+                List<BookshelfItem> bookshelfItems = new ArrayList<>(bookCursor.getCount());
                 while (bookCursor.moveToNext())
-                    bookListItems.add(new BookListItem(Database.getStringFromCursor(bookCursor, FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID)));
+                    bookshelfItems.add(new BookshelfItem(userId, Database.getStringFromCursor(bookCursor, FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID)));
 
-                userItems.add(new UserItem(userId, nick, gender, location, bookListItems));
+                userItems.add(new UserItem(userId, nick, gender, location, bookshelfItems));
             }
         } finally {
             cursor.close();
@@ -105,10 +105,10 @@ public class FriendListProvider {
                 values.put(FriendInfoDbContract.COLUMN_NAME_LOCATION, userItem.mLocation);
                 db.insert(FriendInfoDbContract.TABLE_NAME, null, values);
 
-                for (BookListItem bookListItem: userItem.mPreviewBookItems) {
+                for (BookshelfItem bookshelfItem : userItem.mPreviewBookItems) {
                     values = new ContentValues();
                     values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_USER_ID, userItem.mUserId);
-                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID, bookListItem.mBookId);
+                    values.put(FriendPreviewBookIdsDbContract.COLUMN_NAME_BOOK_ID, bookshelfItem.getBookId());
                     db.insert(FriendPreviewBookIdsDbContract.TABLE_NAME, null, values);
                 }
             }

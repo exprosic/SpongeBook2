@@ -22,4 +22,6 @@
 
     <dimen name="item_friend_nick_margin">5dp</dimen>
     <dimen name="item_friend_card_corner_radius">4dp</dimen>
+
+    <dimen name="rent_settings_decimal_width">200dp</dimen>
 </resources>

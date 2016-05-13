@@ -34,7 +34,8 @@
             android:name=".LoginActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".booklist.BookListActivity" />
-        <activity android:name=".friend.AddFriendActivity"></activity>
+        <activity android:name=".friend.AddFriendActivity" />
+        <activity android:name=".book.RentSettingActivity"></activity>
     </application>
 
 </manifest>

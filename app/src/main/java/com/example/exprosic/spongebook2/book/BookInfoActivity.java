@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
+import com.example.exprosic.spongebook2.booklist.BookshelfItem;
+import com.example.exprosic.spongebook2.booklist.BorrowableBookshelfItem;
 import com.example.exprosic.spongebook2.utils.Debugging;
 import com.squareup.picasso.Picasso;
 
@@ -26,7 +28,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class BookInfoActivity extends AppCompatActivity {
-    private static String TAG = BookInfoActivity.class.getSimpleName();
+    public static final String TAG = BookInfoActivity.class.getSimpleName();
+    private static final int RETURN_FROM_RENT_SETTING = 0;
 
     /* views */
     @Bind(R.id.the_toolbar)
@@ -39,21 +42,20 @@ public class BookInfoActivity extends AppCompatActivity {
     Button mButtonBorrow;
 
     /* params */
-    private static final String PARAM_BOOKID = "bookId";
+    private static final String PARAM_BOOK_ID = "bookId";
     private String mBookId;
-    private static final String PARAM_USERID = "userId";
-    private int mUserId; // -1 for not provided
+    private static final String PARAM_BOOKSHELF_ITEM = "bookshelfItem";
+    private BookshelfItem mBookshelfItem;
 
-    public static void start(Context context, String bookId) {
+    public static void startWithBookId(Context context, String bookId) {
         Intent intent = new Intent(context, BookInfoActivity.class);
-        intent.putExtra(PARAM_BOOKID, bookId);
+        intent.putExtra(PARAM_BOOK_ID, bookId);
         context.startActivity(intent);
     }
 
-    public static void startWithUser(Context context, String bookId, int userId) {
+    public static void startWithBookshelfItem(Context context, BookshelfItem bookshelfItem) {
         Intent intent = new Intent(context, BookInfoActivity.class);
-        intent.putExtra(PARAM_BOOKID, bookId);
-        intent.putExtra(PARAM_USERID, userId);
+        intent.putExtra("bookshelfItem", bookshelfItem);
         context.startActivity(intent);
     }
 
@@ -67,27 +69,26 @@ public class BookInfoActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         dumpInfoFromIntent(getIntent());
-        fetchBookInfo(mBookId);
+        fetchBookInfo(mBookId!=null?mBookId:mBookshelfItem.getBookId());
     }
 
     private void dumpInfoFromIntent(Intent intent) {
-        mBookId = intent.getStringExtra(PARAM_BOOKID);
-        mUserId = intent.getIntExtra(PARAM_USERID, -1);
-        assert mBookId != null;
+        mBookId = intent.getStringExtra(PARAM_BOOK_ID);
+        mBookshelfItem = (BookshelfItem)intent.getSerializableExtra(PARAM_BOOKSHELF_ITEM);
+        Debugging.myAssert((mBookId==null) != (mBookshelfItem==null), "mBookId==null == mBookshelfItem==null");
 
-        if (mUserId != -1) {
+        if (mBookshelfItem instanceof BorrowableBookshelfItem) {
             mButtonBorrow.setVisibility(View.VISIBLE);
-            if (MyApplication.isMyself(mUserId)) {
+            if (MyApplication.isMyself(mBookshelfItem.getUserId())) {
                 mButtonBorrow.setText(R.string.borrow_setting);
                 mButtonBorrow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: setting
-                        Debugging.makeRawToast(BookInfoActivity.this, Toast.LENGTH_SHORT, "setting");
+                        BorrowableBookshelfItem bookshelfItem = (BorrowableBookshelfItem)mBookshelfItem;
+                        RentSettingActivity.startWithBookshelfItem(BookInfoActivity.this, bookshelfItem, RETURN_FROM_RENT_SETTING);
                     }
                 });
             } else {
-                if ()
                 mButtonBorrow.setText(R.string.borrow_book);
                 mButtonBorrow.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -138,6 +139,21 @@ public class BookInfoActivity extends AppCompatActivity {
                     .into(mBookImage);
         } else {
             mBookImage.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.no_image));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case RETURN_FROM_RENT_SETTING:
+                if (resultCode == RESULT_OK) {
+                    BorrowableBookshelfItem bookshelfItem = (BorrowableBookshelfItem)data.getSerializableExtra(RentSettingActivity.PARAM_NEW_ITEM);
+                    mBookshelfItem = bookshelfItem;
+                    bookshelfItem = (BorrowableBookshelfItem)mBookshelfItem;
+                }
+                break;
+            default:
+                throw new RuntimeException("unexpected activity return");
         }
     }
 

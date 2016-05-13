@@ -16,4 +16,11 @@ public class StringUtils {
     public static String emptyToNull(String string) {
         return string.equals("") ?null :string;
     }
+
+    public static String[] toStrings(Object... args) {
+        String[] strArgs = new String[args.length];
+        for (int i=0; i<args.length; ++i)
+            strArgs[i] = args[i].toString();
+        return strArgs;
+    }
 }

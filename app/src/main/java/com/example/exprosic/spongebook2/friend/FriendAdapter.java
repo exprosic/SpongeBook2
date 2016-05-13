@@ -15,16 +15,13 @@ import android.widget.TextView;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookItem;
 import com.example.exprosic.spongebook2.booklist.BookListActivity;
-import com.example.exprosic.spongebook2.booklist.BookListItem;
+import com.example.exprosic.spongebook2.booklist.BookshelfItem;
 import com.example.exprosic.spongebook2.utils.Debugging;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 /**
  * Created by exprosic on 4/22/2016.
@@ -75,8 +72,8 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
         UserItem userItem = mUserItems.get(position);
         holder.mUserInfoText.setText(userItem.mNick);
         holder.mTableManager.reset();
-        for (BookListItem bookListItem: userItem.mPreviewBookItems) {
-            BookItem bookItem = mBookPool.get(bookListItem.mBookId);
+        for (BookshelfItem bookshelfItem : userItem.mPreviewBookItems) {
+            BookItem bookItem = mBookPool.get(bookshelfItem.getBookId());
             Debugging.myAssert(bookItem!=null, String.format(Locale.US, "bookItem is null, book pool size = %d, itemCount=%d", mBookPool.size(), getItemCount()));
             View bookView = LayoutInflater.from(mContext).inflate(R.layout.item_book, null);
             holder.mTableManager.addView(bookView);

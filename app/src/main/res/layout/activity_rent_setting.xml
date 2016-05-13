@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.exprosic.spongebook2.book.RentSettingActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/the_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TableRow>
+                <TextView android:text="@string/borrowable"/>
+                <CheckBox android:id="@+id/check_borrowable"/>
+            </TableRow>
+            <TableRow>
+                <TextView android:text="@string/borrow_deposit"/>
+                <EditText android:id="@+id/edit_deposit"
+                    android:minWidth="@dimen/rent_settings_decimal_width"
+                    android:inputType="numberDecimal"/>
+            </TableRow>
+            <TableRow>
+                <TextView android:text="@string/borrow_rental" />
+                <EditText android:id="@+id/edit_rental"
+                    android:maxWidth="@dimen/rent_settings_decimal_width"
+                    android:inputType="numberDecimal" />
+            </TableRow>
+            <TableRow>
+                <Button android:id="@+id/button_submit"
+                    android:text="@string/submit"
+                    android:layout_span="2"/>
+            </TableRow>
+        </TableLayout>
+    </ScrollView>
+</LinearLayout>

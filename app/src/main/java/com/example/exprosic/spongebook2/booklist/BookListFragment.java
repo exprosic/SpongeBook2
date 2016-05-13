@@ -13,13 +13,13 @@ import android.widget.Toast;
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookItem;
-import com.example.exprosic.spongebook2.book.BookProvider;
+import com.example.exprosic.spongebook2.book.BookPool;
 import com.example.exprosic.spongebook2.utils.Debugging;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -37,7 +37,9 @@ public class BookListFragment extends Fragment {
     private int mUserId;
 
     private long mLastRefreshTimeStamp;
-    private List<BookItem> mBookItems;
+    private Map<String,BookItem> mBookPool;
+    private List<BookshelfItem> mBookshelfItems;
+    private BookListAdapter mBookListAdapter;
 
     public static BookListFragment newInstanceByUserId(int userId) {
         Bundle args = new Bundle();
@@ -89,74 +91,55 @@ public class BookListFragment extends Fragment {
     private void loadBookList() {
         MyApplication.getBookListProvider().fetchBookList(getActivity(), mUserId, new BookListProvider.OnFetchedListener() {
             @Override
-            public void onBookListFetched(final List<BookListItem> bookListItems) {
+            public void onBookListFetched(List<BookshelfItem> bookshelfItems) {
                 {
                     // test
                     StringBuilder builder = new StringBuilder();
-                    for (BookListItem bookListItem : bookListItems) {
-                        builder.append(bookListItem.mBookId);
+                    for (BookshelfItem bookshelfItem : bookshelfItems) {
+                        builder.append(bookshelfItem.mBookId);
                         builder.append("; ");
                     }
                     Debugging.makeRawToast(getActivity(), Toast.LENGTH_SHORT, builder.toString());
                 }
                 mLastRefreshTimeStamp = MyApplication.getBookListProvider().getTimeStamp();
-                if (mBookItems != null) {
-                    mBookItems.clear();
-                } else {
-                    mBookItems = new ArrayList<BookItem>(bookListItems.size());
-                }
-                final CountDownLatch latch = new CountDownLatch(bookListItems.size());
-                for (int i = 0; i < bookListItems.size(); ++i) {
-                    final int idx = i;
-                    MyApplication.getBookProvider().fetchBookById(getActivity(), bookListItems.get(i).mBookId, new BookProvider.OnFetchedListener() {
-                        @Override
-                        public void onBookFetched(final BookItem bookItem) {
-                            try {
-                                if (bookItem == null)
-                                    return;
-                                if (bookItem.mImageUrl == null)
-                                    bookItem.mImageUrl = BookItem.NO_IMAGE;
-                                mBookItems.add(bookItem);
-                            } finally {
-                                latch.countDown();
-                            }
-                        }
-                    });
-                }
-
-                new Thread() {
+                mBookshelfItems = bookshelfItems;
+                mBookPool = new ConcurrentHashMap<>();
+                new BookPool(getContext(), mBookPool) {
+                    @Override
+                    protected void iterateOverBooks() {
+                        for (BookshelfItem bookshelfItem : mBookshelfItems)
+                            loadBook(bookshelfItem.mBookId);
+                    }
+                }.onLoaded(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            latch.await();
-                            mSwipeRefreshLayout.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mSwipeRefreshLayout.setRefreshing(false);
-                                    renderBooks();
-                                }
-                            });
-                        } catch (InterruptedException e) {
-                            Log.d(TAG, "CountDownLatch interrupted", e);
-                        }
+                        mSwipeRefreshLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSwipeRefreshLayout.setRefreshing(false);
+                                renderBooks();
+                            }
+                        });
                     }
-                }.start();
+                });
             }
         });
     }
 
     private void renderBooks() {
-        assert mBookItems != null;
+        Debugging.myAssert(mBookshelfItems != null, "mBookshelfItems is null");
         // 刚打开时，由于adapter为null，即便是当前用户，也不显示[+]
         if (mRecyclerView.getAdapter() != null) {
             Log.d(TAG, String.format(Locale.US, "dataset changed, new size = %d", mRecyclerView.getAdapter().getItemCount()));
+            mBookListAdapter.setBookshelfItems(mBookshelfItems);
             mRecyclerView.getAdapter().notifyDataSetChanged();
         } else {
             if (MyApplication.isMyself(mUserId)) {
-                mRecyclerView.setAdapter(new MyBookListAdapter(getActivity(), mUserId, mBookItems));
+                mBookListAdapter = new MyBookListAdapter(getActivity(), mBookPool, mBookshelfItems);
             } else {
-                mRecyclerView.setAdapter(new BookListAdapter(getActivity(), mUserId, mBookItems));
+                mBookListAdapter = new BookListAdapter(getActivity(), mBookPool, mBookshelfItems);
             }
+            mRecyclerView.setAdapter(mBookListAdapter);
         }
     }
 }

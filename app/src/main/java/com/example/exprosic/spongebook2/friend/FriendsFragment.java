@@ -1,10 +1,7 @@
 package com.example.exprosic.spongebook2.friend;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,21 +11,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.Space;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;;
+;
 
 import com.example.exprosic.spongebook2.MyApplication;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookItem;
-import com.example.exprosic.spongebook2.book.BookProvider;
-import com.example.exprosic.spongebook2.booklist.BookListActivity;
-import com.example.exprosic.spongebook2.utils.Debugging;
-import com.example.exprosic.spongebook2.utils.Sync;
-import com.squareup.picasso.Picasso;
+import com.example.exprosic.spongebook2.book.BookPool;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -97,7 +83,7 @@ public class FriendsFragment extends Fragment {
                 mUserItems.clear();
                 mUserItems.addAll(userItems);
 
-                new BookPool(getContext(), mBookPool, mUserItems).onLoaded(new Runnable() {
+                new FriendsBookPool(getContext(), mBookPool, mUserItems).onLoaded(new Runnable() {
                     @Override
                     public void run() {
                         mSwipeRefreshLayout.post(new Runnable() {

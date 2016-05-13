@@ -12,9 +12,11 @@ import android.widget.TextView;
 import com.example.exprosic.spongebook2.R;
 import com.example.exprosic.spongebook2.book.BookInfoActivity;
 import com.example.exprosic.spongebook2.book.BookItem;
+import com.example.exprosic.spongebook2.utils.Debugging;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -24,8 +26,8 @@ import butterknife.ButterKnife;
  */
 public class BookListAdapter extends RecyclerView.Adapter {
     protected Context mContext;
-    protected List<BookItem> mBookItems;
-    protected int mUserId;
+    protected Map<String,BookItem> mBookPool;
+    protected List<BookshelfItem> mBookshelfItems;
 
     static class BookViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.the_text_view)
@@ -43,14 +45,14 @@ public class BookListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public BookListAdapter(Context context, List<BookItem> bookItems) {
-        this(context, -1, bookItems);
+    public BookListAdapter(Context context, Map<String,BookItem> bookPool, List<BookshelfItem> bookshelfItems) {
+        mContext = context;
+        mBookPool = bookPool;
+        mBookshelfItems = bookshelfItems;
     }
 
-    public BookListAdapter(Context context, int userId, List<BookItem> bookItems) {
-        mContext = context;
-        mBookItems = bookItems;
-        mUserId = userId;
+    public void setBookshelfItems(List<BookshelfItem> bookshelfItems) {
+        mBookshelfItems = bookshelfItems;
     }
 
     protected View inflateBookItemView(ViewGroup parent) {
@@ -70,7 +72,7 @@ public class BookListAdapter extends RecyclerView.Adapter {
             throw new AssertionError("non-BookViewHolder passed to BooksAdapter");
         BookViewHolder bookViewHolder = (BookViewHolder) holder;
 
-        String title = mBookItems.get(position).mTitle;
+        String title = mBookPool.get(mBookshelfItems.get(position).getBookId()).mTitle;
         if (title.length() > 8)
             title = title.substring(0, 7) + "...";
         bookViewHolder.mTextView.setText(title);
@@ -79,7 +81,7 @@ public class BookListAdapter extends RecyclerView.Adapter {
     }
 
     protected void bindImage(BookViewHolder holder) {
-        String imageUrl = mBookItems.get(holder.getBookListPosition()).mImageUrl;
+        String imageUrl = mBookPool.get(mBookshelfItems.get(holder.getBookListPosition()).getBookId()).mImageUrl;
         if (imageUrl == null)
             return;
         if (imageUrl.equals(BookItem.NO_IMAGE)) {
@@ -91,20 +93,26 @@ public class BookListAdapter extends RecyclerView.Adapter {
         }
     }
 
+    protected void clickBookshelfItem(BookshelfItem bookshelfItem, BookItem bookItem) {
+        BookInfoActivity.startWithBookshelfItem(mContext, bookshelfItem);
+    }
+
     protected View.OnClickListener onItemClick(final BookViewHolder holder) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BookItem bookItem = mBookItems.get(holder.getBookListPosition());
+                BookshelfItem bookshelfItem = mBookshelfItems.get(holder.getBookListPosition());
+                BookItem bookItem = mBookPool.get(bookshelfItem.getBookId());
                 if (bookItem.isValid())
-                    BookInfoActivity.startWithUser(mContext, bookItem.mBookId, mUserId);
+                    clickBookshelfItem(bookshelfItem, bookItem);
             }
         };
     }
 
     @Override
     public int getItemCount() {
-        return mBookItems.size();
+        Debugging.myAssert(mBookshelfItems !=null, "wtf");
+        return mBookshelfItems.size();
     }
 }
 

@@ -12,6 +12,7 @@ import com.example.exprosic.spongebook2.book.BookItem;
 import com.example.exprosic.spongebook2.scan.MultiscanActivity;
 
 import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -42,8 +43,8 @@ public class MyBookListAdapter extends BookListAdapter {
         }
     }
 
-    public MyBookListAdapter(Context context, int userId, List<BookItem> bookItems) {
-        super(context, userId, bookItems);
+    public MyBookListAdapter(Context context, Map<String,BookItem> bookPool, List<BookshelfItem> bookshelfItems) {
+        super(context, bookPool, bookshelfItems);
     }
 
     @Override
